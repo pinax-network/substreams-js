@@ -13,13 +13,13 @@ export * from "./src/generated/sf/substreams/v1/clock"
 export * from "./src/generated/sf/substreams/v1/modules"
 export * from "./src/generated/sf/substreams/v1/package"
 export * from "./src/generated/sf/substreams/v1/substreams"
-export * from "./utils";
+export * from "./src/utils";
 
 // Environment variables
-import { API_TOKEN, FIREHOSE_HOST, START_BLOCK_NUM, STOP_BLOCK_NUM, MODULES, PACKAGE, PROTO } from './config';
+import { API_TOKEN, FIREHOSE_HOST, START_BLOCK_NUM, STOP_BLOCK_NUM, MODULES, PACKAGE, PROTO } from './src/config';
 
 // Utils
-import { downloadPackage, downloadProto, parseBlockData } from './utils';
+import { downloadPackage, downloadProto, parseBlockData } from './src/utils';
 
 // Credentials
 const metadata = new Metadata();

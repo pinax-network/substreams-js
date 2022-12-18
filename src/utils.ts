@@ -6,8 +6,8 @@ import { importer } from 'ipfs-unixfs-importer';
 import { MemoryBlockstore } from 'blockstore-core/memory';
 
 // Substream auto-generated
-import { Clock } from "./src/generated/sf/substreams/v1/clock";
-import { BlockScopedData, Response } from "./src/generated/sf/substreams/v1/substreams";
+import { Clock } from "./generated/sf/substreams/v1/clock";
+import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams";
 
 export function printBlock( block: BlockScopedData, interval = 100 ) {
     const seconds = getSeconds(block.clock);

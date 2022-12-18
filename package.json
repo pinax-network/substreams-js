@@ -1,6 +1,6 @@
 {
-  "name": "@pinax/substreams",
-  "description": "Node.js Substreams Consumer",
+  "name": "substreams-node",
+  "description": "Substreams Node.js Consumer",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
