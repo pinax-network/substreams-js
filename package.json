@@ -8,7 +8,7 @@
   "scripts": {
     "codegen": "buf generate buf.build/fubhy/substreams",
     "build": "tsc",
-    "test": "ts-node *.spec.ts"
+    "test": "ts-node **/*.spec.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "1.*",
