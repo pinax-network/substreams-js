@@ -1,8 +1,8 @@
-# `Substreams` **Node.js** Consumer
+# `Substreams` **Node.js**
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/EOS-Nation/substreams-nodejs-consumer/blob/main/LICENSE)
-
-[![Node.js Substreams](https://github.com/EOS-Nation/substreams-nodejs-consumer/actions/workflows/node-consumer.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs-consumer/actions/workflows/node-consumer.yml)
+[![Build Status](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml)
+[![npm version](https://badge.fury.io/js/substreams-nodejs.svg)](https://badge.fury.io/js/substreams-nodejs)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/EOS-Nation/substreams-nodejs/master/LICENSE)
 
 > `Substream` consumer library using native **Node.js** event emitters.
 
@@ -10,8 +10,26 @@
 
 - [Node.js (LTS or Current)](https://nodejs.org/en/)
 - [Buf - Protocol Buffers](https://buf.build/)
-- [Antelope Firehose V2](https://eos.firehose.eosnation.io)
-  > `eos.firehose.eosnation.io:9001` by default
+- [Firehose V2](https://eos.firehose.eosnation.io)
+
+### Firsehose V2
+
+| Chain       | Host     |
+|-------------|----------|
+| EOS         | `eos.firehose.eosnation.io:9001`
+| WAX         | `wax.firehose.eosnation.io:9001`
+| Ore         | `ore.firehose.eosnation.io:9001`
+| Telos       | `telos.firehose.eosnation.io:9001`
+
+### Firsehose V2 (Testnets)
+
+| Chain         | Host     |
+|---------------|----------|
+| WAX Testnet   | `waxtest.firehose.eosnation.io:9001`
+| Jungle 4      | `jungle4.firehose.eosnation.io:9001`
+| Kylin         | `kylin.firehose.eosnation.io:9001`
+| Ore Stage     | `orestage.firehose.eosnation.io:9001`
+| Telos Testnet | `telostest.firehose.eosnation.io:9001`
 
 ## Quickstart
 
