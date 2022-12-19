@@ -1,7 +1,7 @@
 # `Substreams` **Node.js** consumer
 
 [![Build Status](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml)
-[![npm version](https://badge.fury.io/js/substreams-nodejs.svg)](https://badge.fury.io/js/substreams-nodejs)
+[![npm version](https://badge.fury.io/js/substreams.svg)](https://badge.fury.io/js/substreams)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/EOS-Nation/substreams-nodejs/master/LICENSE)
 
 > `Substream` consumer library using native **Node.js** event emitters.
