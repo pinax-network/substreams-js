@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { formatDate, getIpfsHash } from './utils';
@@ -16,7 +18,7 @@ describe('substreams', () => {
  * Expect a promise to throw an error with a specific message.
  * @param promise - The promise to await.
  * @param {string} errorMsg - The error message that we expect to see.
- */
+*/
 const expectToThrow = async (promise: Promise<any>, errorMsg: string) => {
     try {
         await promise
