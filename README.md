@@ -76,6 +76,7 @@ const substreams = new Substreams(host, {
 
     await substreams.start(modules);
     console.log("done");
+    process.exit();
 })();
 ```
 

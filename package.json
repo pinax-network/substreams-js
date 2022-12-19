@@ -6,9 +6,13 @@
   "types": "dist/index.d.js",
   "license": "MIT",
   "scripts": {
-    "codegen": "buf generate buf.build/fubhy/substreams",
     "build": "tsc",
+    "prepublishOnly": "npm run test && npm run build",
+    "codegen": "buf generate buf.build/fubhy/substreams",
     "test": "ts-node **/*.spec.ts"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "dependencies": {
     "@grpc/grpc-js": "1.*",
