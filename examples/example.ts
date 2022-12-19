@@ -1,4 +1,4 @@
-import Substreams from "../";
+import { Substreams, download } from "../";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
@@ -16,11 +16,10 @@ const substreams = new Substreams(host, {
 });
 
 (async () => {
-    // download Substream from IPFS
-    const modules = await Substreams.downloadSubstream(substream);
+    // download Substream & Protobuf from IPFS
+    const [modules, root] = await download(substream, proto);
 
-    // download protobuf from IPFS
-    const root = await Substreams.downloadProto(proto);
+    // Protobuf types
     const Action = root.lookupType("Action");
 
     substreams.on("block", block => {

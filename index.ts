@@ -6,7 +6,6 @@ import { GrpcTransport } from '@protobuf-ts/grpc-transport';
 // Substream generated code
 // $ buf generate buf.build/fubhy/substreams
 import { StreamClient } from './src/generated/sf/substreams/v1/substreams.client';
-import { Package } from './src/generated/sf/substreams/v1/package';
 import { Modules } from './src/generated/sf/substreams/v1/modules';
 import { BlockScopedData, ForkStep, Request } from './src/generated/sf/substreams/v1/substreams';
 import { StoreDeltas } from "./src/generated/sf/substreams/v1/substreams";
@@ -20,7 +19,7 @@ export * from "./src/generated/sf/substreams/v1/substreams"
 export * from "./src/utils";
 
 // Utils
-import { downloadPackage, downloadProto, parseBlockData } from './src/utils';
+import { parseBlockData } from './src/utils';
 
 // Create Substream
 export function createStream(client: StreamClient, modules?: Modules, options: {
@@ -41,13 +40,6 @@ export function createStream(client: StreamClient, modules?: Modules, options: {
         modules,
         outputModules,
     }));
-}
-
-async function downloadSubstream( ipfs: string ) {
-    const binary = await downloadPackage(ipfs);
-    const { modules } = Package.fromBinary(binary);
-    if ( !modules ) throw new Error(`No modules found in Substream: ${ipfs}`);
-    return modules;
 }
 
 interface ModuleOutput {
@@ -76,7 +68,7 @@ type MessageEvents = {
     storeDeltas: (output: StoreDelta) => void;
 }
 
-export default class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
+export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
     // internal
     public client: StreamClient;
 
@@ -111,14 +103,6 @@ export default class Substreams extends (EventEmitter as new () => TypedEmitter<
                 channelCredentials: creds,
             }),
         );
-    }
-
-    static async downloadSubstream( ipfs: string ) {
-        return downloadSubstream(ipfs);
-    }
-
-    static async downloadProto( ipfs: string ) {
-        return downloadProto(ipfs);
     }
 
     public async start(modules: Modules) {    

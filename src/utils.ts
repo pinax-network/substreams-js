@@ -6,6 +6,7 @@ import { importer } from 'ipfs-unixfs-importer';
 import { MemoryBlockstore } from 'blockstore-core/memory';
 
 // Substream auto-generated
+import { Package } from './generated/sf/substreams/v1/package';
 import { Clock } from "./generated/sf/substreams/v1/clock";
 import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams";
 
@@ -41,9 +42,20 @@ export function tmpFilepath(ipfs: string) {
     return path.join(os.tmpdir(), ipfs);
 }
 
+export async function download(substream: string, proto: string) {
+    return Promise.all([downloadSubstream(substream), downloadProto(proto)]);
+}
+
 export async function downloadProto(ipfs: string) {
     await downloadToFile(ipfs);
     return protobuf.loadSync(tmpFilepath(ipfs));
+}
+
+export async function downloadSubstream( ipfs: string ) {
+    const binary = await downloadPackage(ipfs);
+    const { modules } = Package.fromBinary(binary);
+    if ( !modules ) throw new Error(`No modules found in Substream: ${ipfs}`);
+    return modules;
 }
 
 export function readFileToBuffer(ipfs: string) {
