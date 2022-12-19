@@ -6,6 +6,20 @@
 
 > `Substream` consumer library using native **Node.js** event emitters.
 
+## Install
+
+Using NPM:
+
+```bash
+npm install --save substreams
+```
+
+or using Yarn:
+
+```bash
+yarn add substreams
+```
+
 ## Requirements
 
 - [Node.js (LTS or Current)](https://nodejs.org/en/)
