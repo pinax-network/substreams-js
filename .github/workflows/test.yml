@@ -1,10 +1,6 @@
-name: Node.js Substreams
+name: Substreams Node.js
 
 on: [push, pull_request]
-
-defaults:
-  run:
-    working-directory: consumers/node
 
 jobs:
   tests:
