@@ -1,3 +1,4 @@
+import EventEmitter from 'node:events';
 import { credentials, Metadata } from '@grpc/grpc-js';
 import { GrpcTransport } from '@protobuf-ts/grpc-transport';
 
@@ -15,49 +16,23 @@ export * from "./src/generated/sf/substreams/v1/package"
 export * from "./src/generated/sf/substreams/v1/substreams"
 export * from "./src/utils";
 
-// Environment variables
-import { API_TOKEN, FIREHOSE_HOST, START_BLOCK_NUM, STOP_BLOCK_NUM, MODULES, PACKAGE, PROTO } from './src/config';
-
 // Utils
 import { downloadPackage, downloadProto, parseBlockData } from './src/utils';
 
-// Credentials
-const metadata = new Metadata();
-if ( API_TOKEN ) metadata.add('authorization', API_TOKEN);
-const creds = credentials.combineChannelCredentials(
-    credentials.createSsl(),
-    credentials.createFromMetadataGenerator((_, callback) => callback(null, metadata)),
-);
-
-// Create Substream Client
-const client = new StreamClient(
-    new GrpcTransport({
-        host: FIREHOSE_HOST,
-        channelCredentials: creds,
-    }),
-);
-
-// Load Substream
-export function createStream(modules?: Modules) {
+// Create Substream
+export function createStream(client: StreamClient, modules?: Modules, options: {
+    startBlockNum?: string,
+    stopBlockNum?: string,
+    outputModules?: string[],
+} = {}) {
+    const { startBlockNum, stopBlockNum, outputModules } = options;
     return client.blocks(Request.create({
-        startBlockNum: START_BLOCK_NUM,
-        stopBlockNum: STOP_BLOCK_NUM,
+        startBlockNum,
+        stopBlockNum,
         forkSteps: [ForkStep.STEP_IRREVERSIBLE],
         modules,
-        outputModules: MODULES,
+        outputModules,
     }));
-}
-
-export type Adapter = {
-    init(startBlockNum?: string, stopBlockNum?: string): any;
-    processBlock(block: BlockScopedData): any;
-    processMapOutput(value: Uint8Array, root: protobuf.Root): any;
-    done(): any;
-}
-
-export type Config = {
-    START_BLOCK_NUM?: string;
-    STOP_BLOCK_NUM?: string;
 }
 
 async function downloadSubstream( ipfs: string ) {
@@ -67,28 +42,73 @@ async function downloadSubstream( ipfs: string ) {
     return modules;
 }
 
-// Parse Substream Block Data
-export async function run(adapter: Adapter, config: Config = {}) {
+export default class Substreams extends EventEmitter {
+    // internal
+    public client: StreamClient;
 
-    // Setup Substream
-    const modules = await downloadSubstream(PACKAGE);
-    const root = await downloadProto(PROTO);
-    const stream = createStream(modules);
+    // configs
+    public startBlockNum?: string;
+    public stopBlockNum?: string;
+    public outputModules?: string[];
 
-    // Send Substream Data to Adapter
-    await adapter.init(START_BLOCK_NUM, STOP_BLOCK_NUM);
-    for await (const response of stream.responses) {
-        const block = parseBlockData(response);
-        if ( !block ) continue;
-        adapter.processBlock(block);
+    constructor(host: string, options: {
+        startBlockNum?: string,
+        stopBlockNum?: string,
+        outputModules?: string[],
+        authorization?: string,
+    } = {}) {
+        super();
+        this.startBlockNum = options.startBlockNum;
+        this.stopBlockNum = options.stopBlockNum;
 
-        for ( const output of block.outputs ) {
-            if ( output.data.oneofKind == "mapOutput" ) {
-                const { value } = output.data.mapOutput;
-                if ( !value.length ) continue;
-                adapter.processMapOutput( value, root );
+        // Credentials
+        const metadata = new Metadata();
+        if ( options.authorization ) metadata.add('authorization', options.authorization);
+        const creds = credentials.combineChannelCredentials(
+            credentials.createSsl(),
+            credentials.createFromMetadataGenerator((_, callback) => callback(null, metadata)),
+        );
+        
+        // Substream Client
+        this.client = new StreamClient(
+            new GrpcTransport({
+                host,
+                channelCredentials: creds,
+            }),
+        );
+    }
+
+    static async downloadSubstream( ipfs: string ) {
+        return downloadSubstream(ipfs);
+    }
+
+    static async downloadProto( ipfs: string ) {
+        return downloadProto(ipfs);
+    }
+
+    public async start(modules: Modules) {    
+        // Setup Substream
+        const stream = createStream(this.client, modules, {
+            startBlockNum: this.startBlockNum,
+            stopBlockNum: this.stopBlockNum,
+            outputModules: this.outputModules,
+        });
+    
+        // Send Substream Data to Adapter
+        for await (const response of stream.responses) {
+            const block = parseBlockData(response);
+            if ( !block ) continue;
+            this.emit("block", block);
+    
+            for ( const output of block.outputs ) {
+                console.log(output);
+                if ( output.data.oneofKind == "mapOutput" ) {
+                    const { value } = output.data.mapOutput;
+                    if ( !value.length ) continue;
+                    this.emit("mapOutput", value );
+                }
             }
         }
+        this.emit("done");
     }
-    await adapter.done();
 }

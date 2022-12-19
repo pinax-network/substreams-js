@@ -1,5 +1,5 @@
 {
-  "name": "substreams-node",
+  "name": "substreams",
   "description": "Substreams Node.js Consumer",
   "version": "0.1.0",
   "main": "dist/index.js",

@@ -1,6 +1,6 @@
-import path from "path";
-import fs from "fs";
-import os from "os";
+import path from "node:path";
+import fs from "node:fs";
+import os from "node:os";
 import protobuf from "protobufjs";
 import { importer } from 'ipfs-unixfs-importer';
 import { MemoryBlockstore } from 'blockstore-core/memory';

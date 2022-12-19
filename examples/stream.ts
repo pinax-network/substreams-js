@@ -1,21 +1,4 @@
-# **Node.js** `Substreams` Consumer
-
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/EOS-Nation/substreams-nodejs-consumer/blob/main/LICENSE)
-[![Node.js Substreams](https://github.com/EOS-Nation/substreams-nodejs-consumer/actions/workflows/node-consumer.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs-consumer/actions/workflows/node-consumer.yml)
-
-> `Substream` Consumer library using **Node.js** event emitters
-
-## Requirements
-
-- [Node.js (LTS or Current)](https://nodejs.org/en/)
-- [Buf - Protocol Buffers](https://buf.build/)
-- [Antelope Firehose V2](https://eos.firehose.eosnation.io)
-  > `eos.firehose.eosnation.io:9001` by default
-
-## Quickstart
-
-```js
-import Substreams from "substreams";
+import Substreams from "..";
 
 // configs
 const host = "eos.firehose.eosnation.io:9001";
@@ -51,11 +34,3 @@ const substreams = new Substreams(host, {
     await substreams.start(modules);
     console.log("done");
 })();
-```
-
-## Tests
-
-```bash
-$ npm ci
-$ npm test
-```
