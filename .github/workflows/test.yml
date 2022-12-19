@@ -1,4 +1,4 @@
-name: Substreams Node.js
+name: CI
 
 on: [push, pull_request]
 
