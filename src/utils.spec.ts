@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { formatDate, getIpfsHash } from './utils';
 
-describe('substreams-consumer', () => {
+describe('substreams', () => {
     it("formatDate", () => {
         assert.equal(formatDate(1670515200), "2022-12-08T16:00:00");
     });

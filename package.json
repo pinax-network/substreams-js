@@ -1,6 +1,6 @@
 {
   "name": "substreams",
-  "description": "Substreams Node.js Consumer",
+  "description": "Substreams Node.js consumer",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
