@@ -5,6 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "author": "Denis Carriere <@DenisCarriere>",
+  "contributors": [
+    "Denis Carriere <@DenisCarriere>",
+    "Frederik Schöll <@fschoell>",
+    "Yaro <@YaroShkvorets>"
+  ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run test && npm run build",
