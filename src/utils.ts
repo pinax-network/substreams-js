@@ -1,9 +1,9 @@
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
-import protobuf from "protobufjs";
 import { importer } from 'ipfs-unixfs-importer';
 import { MemoryBlockstore } from 'blockstore-core/memory';
+import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
 
 // Substream auto-generated
 import { Package } from './generated/sf/substreams/v1/package';
@@ -33,7 +33,7 @@ export function getSeconds( clock?: Clock ) {
 
 export const isIpfs = ( str: string ) => /^Qm[1-9A-Za-z]{44}$/.test(str);
 
-export async function downloadPackage(ipfs: string) {
+export async function downloadBinary(ipfs: string) {
     if ( isIpfs(ipfs) ) return downloadToFile(ipfs);
     return readFileToBuffer(ipfs);
 }
@@ -47,12 +47,12 @@ export async function download(substream: string, proto: string) {
 }
 
 export async function downloadProto(ipfs: string) {
-    await downloadToFile(ipfs);
-    return protobuf.loadSync(tmpFilepath(ipfs));
+    const binary = await downloadBinary(ipfs);
+    return createRegistryFromDescriptors(binary);
 }
 
 export async function downloadSubstream( ipfs: string ) {
-    const binary = await downloadPackage(ipfs);
+    const binary = await downloadBinary(ipfs);
     const { modules } = Package.fromBinary(binary);
     if ( !modules ) throw new Error(`No modules found in Substream: ${ipfs}`);
     return modules;
