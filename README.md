@@ -82,6 +82,7 @@ const substreams = new Substreams(host, {
     substreams.on("block", block => {
         console.log("Block:", block);
     });
+
     substreams.on("storeDeltas", output => {
         console.log("Store Deltas:", output);
     });
