@@ -3,7 +3,6 @@ import { Substreams, download } from "../";
 // User input
 const host = "eos.firehose.eosnation.io:9001";
 const substream = "QmXhHkjuqCFvxEaYDrcURZMhD7y9RNSfNWmXHtX8ramEHL";
-const proto = "QmQ5Ym23TdDBKdPhhszFxhVLf3ujrhj2L6zU3twuGAk7yc";
 const outputModules = ["map_transfers"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
@@ -16,8 +15,8 @@ const substreams = new Substreams(host, {
 });
 
 (async () => {
-    // download Substream & Protobuf binaries from IPFS
-    const [modules, registry] = await download(substream, proto);
+    // download Substream from IPFS
+    const {modules, registry} = await download(substream);
     
     // Find Protobuf message types
     const Actions = registry.findMessage("antelope.eosio.token.v1.Actions");

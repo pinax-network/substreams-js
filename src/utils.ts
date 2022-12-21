@@ -42,20 +42,12 @@ export function tmpFilepath(ipfs: string) {
     return path.join(os.tmpdir(), ipfs);
 }
 
-export async function download(substream: string, proto: string) {
-    return Promise.all([downloadSubstream(substream), downloadProto(proto)]);
-}
-
-export async function downloadProto(ipfs: string) {
-    const binary = await downloadBinary(ipfs);
-    return createRegistryFromDescriptors(binary);
-}
-
-export async function downloadSubstream( ipfs: string ) {
+export async function download( ipfs: string ) {
     const binary = await downloadBinary(ipfs);
     const { modules } = Package.fromBinary(binary);
+    const registry = createRegistryFromDescriptors(binary);
     if ( !modules ) throw new Error(`No modules found in Substream: ${ipfs}`);
-    return modules;
+    return { modules, registry };
 }
 
 export function readFileToBuffer(ipfs: string) {
