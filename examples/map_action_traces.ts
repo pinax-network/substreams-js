@@ -2,8 +2,8 @@ import { Substreams, download } from "../";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "QmU2nMULy6ChWbypNfG5Hde8h9fevcdX2ZtGtwGkkACJ7Z";
-const outputModules = ["map_transfers"];
+const substream = "QmahVkBjZcQQREtK7KyheioErp47uwojWm3jAW3Wq69AEq";
+const outputModules = ["map_action_traces"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
 
@@ -18,13 +18,15 @@ const substreams = new Substreams(host, {
     // download Substream from IPFS
     const {modules, registry} = await download(substream);
     
-    // Find Protobuf message types
-    const Actions = registry.findMessage("antelope.actions.v1.Actions");
-    if ( !Actions) throw new Error("Could not find Actions message type");
+    // Find Protobuf message types from registry
+    const ActionTraces = registry.findMessage("antelope.common.v1.ActionTraces");
+    if ( !ActionTraces) throw new Error("Could not find ActionTraces message type");
 
     substreams.on("mapOutput", output => {
-        const action = Actions.fromBinary(output.data.mapOutput.value);
-        console.log("Map Output:", action);
+        const { actionTraces } = ActionTraces.fromBinary(output.data.mapOutput.value);
+        for ( const actionTrace of actionTraces ) {
+            console.log(actionTrace);
+        }
     });
 
     await substreams.start(modules);
