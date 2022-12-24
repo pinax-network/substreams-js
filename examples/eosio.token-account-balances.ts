@@ -1,9 +1,10 @@
-import { Substreams, download } from "../";
+import { Substreams, download } from "../dist";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
 const substream = "QmU2nMULy6ChWbypNfG5Hde8h9fevcdX2ZtGtwGkkACJ7Z";
-const outputModules = ["map_transfers"];
+// const substream = "../substreams-antelope/substreams/eosio.token/eosio-token-v0.1.2.spkg"
+const outputModules = ["map_account_balances"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
 
@@ -19,11 +20,11 @@ const substreams = new Substreams(host, {
     const {modules, registry} = await download(substream);
     
     // Find Protobuf message types
-    const Actions = registry.findMessage("antelope.actions.v1.Actions");
-    if ( !Actions) throw new Error("Could not find Actions message type");
+    const DatabaseOperations = registry.findMessage("antelope.tables.v1.DatabaseOperations");
+    if ( !DatabaseOperations) throw new Error("Could not find DatabaseOperations message type");
 
     substreams.on("mapOutput", output => {
-        const action = Actions.fromBinary(output.data.mapOutput.value);
+        const action = DatabaseOperations.fromBinary(output.data.mapOutput.value);
         console.log("Map Output:", action);
     });
 

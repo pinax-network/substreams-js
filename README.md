@@ -52,7 +52,7 @@ import { Substreams, download } from "substreams";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "Qmd6br54LiYeG5wWgmo42eWe3mxjo5MgPpko2ziGxJztd4";
+const substream = "QmU2nMULy6ChWbypNfG5Hde8h9fevcdX2ZtGtwGkkACJ7Z";
 const outputModules = ["map_transfers"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";

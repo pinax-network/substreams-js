@@ -50,11 +50,14 @@ export async function download( ipfs: string ) {
     return { modules, registry };
 }
 
-export function readFileToBuffer(ipfs: string) {
-    console.log(`Reading from file system: ${ipfs}`);
-    const filepath = path.isAbsolute(ipfs) ? ipfs : path.resolve(process.cwd(), ipfs);
+export async function readFileToBuffer(filepath: string) {
+    console.log(`Reading from file system: ${filepath}`);
+    filepath = path.isAbsolute(filepath) ? filepath : path.resolve(process.cwd(), filepath);
     if (!fs.existsSync(filepath)) throw new Error(`File not found: ${filepath}`);
-    return new Uint8Array(fs.readFileSync(filepath));
+    const binary = new Uint8Array(fs.readFileSync(filepath));
+    const ipfs = await getIpfsHash(binary);
+    console.log(`Substream: ${ipfs}`);
+    return binary;
 }
 
 export async function downloadToFile(ipfs: string) {

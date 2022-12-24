@@ -2,8 +2,8 @@ import { Substreams, download } from "../";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "Qmd6br54LiYeG5wWgmo42eWe3mxjo5MgPpko2ziGxJztd4";
-const outputModules = ["store_transfers_count"];
+const substream = "QmU2nMULy6ChWbypNfG5Hde8h9fevcdX2ZtGtwGkkACJ7Z";
+const outputModules = ["store_transfers_amount"];
 const startBlockNum = "2";
 const stopBlockNum = "1000";
 
@@ -27,8 +27,6 @@ const substreams = new Substreams(host, {
             const keys = new Map(delta.key.split(",").map(i => i.split("=") as [string, string]))
             const { account, symcode, from, to } = Object.fromEntries(keys);
             const value = Buffer.from(delta.newValue).toString();
-            if ( to ) continue;
-            if ( from ) continue;
             console.log("Store Delta:", {account, symcode, to, from, value});
         }
     });
