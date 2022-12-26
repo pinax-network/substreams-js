@@ -1,4 +1,4 @@
-import { Substreams, download } from "../";
+import { Substreams, download } from "../dist";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
@@ -16,19 +16,12 @@ const substreams = new Substreams(host, {
 
 (async () => {
     // download Substream from IPFS
-    const {modules, registry} = await download(substream);
+    const {modules} = await download(substream);
     
-    // Find Protobuf message types
-    const DatabaseOperations = registry.findMessage("antelope.common.v1.DatabaseOperations");
-    if ( !DatabaseOperations) throw new Error("Could not find DatabaseOperations message type");
-    
-    substreams.on("mapOutput", output => {
-        const { dbOps } = DatabaseOperations.fromBinary(output.data.mapOutput.value);
-        for ( const dbOp of dbOps ) {
-            console.log(dbOp);
-        }
+    substreams.on("block", output => {
+        console.log(output);
     });
-    
+
     // start streaming Substream
     await substreams.start(modules);
 

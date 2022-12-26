@@ -79,7 +79,10 @@ const substreams = new Substreams(host, {
         }
     });
 
+    // start streaming Substream
     await substreams.start(modules);
+
+    // end of Substream
     console.log("done");
     process.exit();
 })();

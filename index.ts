@@ -21,27 +21,6 @@ export * from "./src/utils";
 // Utils
 import { parseBlockData } from './src/utils';
 
-// Create Substream
-export function createStream(client: StreamClient, modules?: Modules, options: {
-    startBlockNum?: string,
-    stopBlockNum?: string,
-    outputModules?: string[],
-} = {}) {
-    const { startBlockNum, stopBlockNum, outputModules } = options;
-
-    // validate
-    if ( !Number.isInteger(Number(startBlockNum))) throw new Error("startBlockNum must be an integer");
-    if ( stopBlockNum && !Number.isInteger(Number(stopBlockNum))) throw new Error("stopBlockNum must be an integer");
-
-    return client.blocks(Request.create({
-        startBlockNum,
-        stopBlockNum,
-        forkSteps: [ForkStep.STEP_IRREVERSIBLE],
-        modules,
-        outputModules,
-    }));
-}
-
 interface ModuleOutput {
     name: string;
     logs: string[];
@@ -66,6 +45,7 @@ type MessageEvents = {
     block: (block: BlockScopedData) => void;
     mapOutput: (output: MapOutput) => void;
     storeDeltas: (output: StoreDelta) => void;
+    cursor: (cursor: string) => void;
 }
 
 export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
@@ -76,17 +56,32 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     public startBlockNum?: string;
     public stopBlockNum?: string;
     public outputModules?: string[];
+    public cursor?: string;
+    public startCursor?: string;
+    public irreversibilityCondition?: string;
+    public forkSteps?: ForkStep[];
+    public initialStoreSnapshotForModules?: string[];
+
+    private stopped = false;
 
     constructor(host: string, options: {
         startBlockNum?: string,
         stopBlockNum?: string,
         outputModules?: string[],
         authorization?: string,
+        startCursor?: string,
+        forkSteps?: ForkStep[],
+        irreversibilityCondition?: string;
+        initialStoreSnapshotForModules?: string[],
     } = {}) {
         super();
         this.startBlockNum = options.startBlockNum;
         this.stopBlockNum = options.stopBlockNum;
         this.outputModules = options.outputModules;
+        this.startCursor = options.startCursor;
+        this.irreversibilityCondition = options.irreversibilityCondition;
+        this.forkSteps = options.forkSteps ?? [ForkStep.STEP_IRREVERSIBLE];
+        this.initialStoreSnapshotForModules = options.initialStoreSnapshotForModules;
 
         // Credentials
         const metadata = new Metadata();
@@ -105,16 +100,31 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         );
     }
 
+    public stop() {
+        this.stopped = true;
+    }
+
     public async start(modules: Modules) {    
+        this.stopped = false;
+
+        // Validate input
+        if ( this.startBlockNum ) {
+            const startBlockNum = Number(this.startBlockNum);
+            if ( !Number.isInteger(startBlockNum)) throw new Error("startBlockNum must be an integer");
+            if ( startBlockNum <= 0 ) throw new Error("startBlockNum must be positive");
+        }
+        if ( !this.outputModules || !this.outputModules.length ) throw new Error("outputModules is empty");
+        if ( !this.forkSteps || !this.forkSteps.length ) throw new Error("forkSteps is empty");
+
         // Setup Substream
-        const stream = createStream(this.client, modules, {
-            startBlockNum: this.startBlockNum,
-            stopBlockNum: this.stopBlockNum,
-            outputModules: this.outputModules,
-        });
+        const stream = this.client.blocks(Request.create({
+            modules,
+            ...this,
+        }));
     
         // Send Substream Data to Adapter
         for await (const response of stream.responses) {
+            if ( this.stopped ) break;
             const block = parseBlockData(response);
             if ( !block ) continue;
             this.emit("block", block);
@@ -134,6 +144,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                     console.log(output.data.oneofKind)
                 }
             }
+            this.emit("cursor", block.cursor);
         }
     }
 }

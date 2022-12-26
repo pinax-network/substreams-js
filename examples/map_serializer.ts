@@ -70,7 +70,11 @@ function decodeStat(dbOp: any) {
             }
         }
     });
+
+    // start streaming Substream
     await substreams.start(modules);
+
+    // end of Substream
     console.log("done");
     process.exit();
 })();

@@ -38,8 +38,19 @@ export async function downloadBinary(ipfs: string) {
     return readFileToBuffer(ipfs);
 }
 
-export function tmpFilepath(ipfs: string) {
-    return path.join(os.tmpdir(), ipfs);
+export function tmpFilepath(filename: string) {
+    return path.join(os.tmpdir(), filename);
+}
+
+export function saveCursor(ipfs: string, cursor: string) {
+    const filepath = tmpFilepath(ipfs) + "cursor.txt"
+    fs.writeFileSync(filepath, cursor);
+}
+
+export function readCursor(ipfs: string) {
+    const filepath = tmpFilepath(ipfs) + "cursor.txt"
+    if ( !fs.existsSync(filepath) ) return "";
+    return fs.readFileSync(filepath, "utf8");
 }
 
 export async function download( ipfs: string ) {
