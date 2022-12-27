@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Substreams, download } from "../dist";
+import { Substreams, download } from "../";
 import { ABI, Serializer } from "@greymass/eosio"
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
 const substream = "QmUc8qGvJ8rVsTQV6L2pvZEEwpfw3K6LxcxX9FMvF4cPB4";
 const outputModules = ["map_db_ops"];
-const startBlockNum = "285135425";
-const stopBlockNum = "285136425";
+const startBlockNum = "283000000";
+const stopBlockNum = "283001000";
 
 // Initialize Substreams
 const substreams = new Substreams(host, {
@@ -58,6 +58,7 @@ function decodeStat(dbOp: any) {
     substreams.on("mapOutput", output => {
         const { dbOps } = DatabaseOperations.fromBinary(output.data.mapOutput.value);
         for ( const dbOp of dbOps ) {
+            if ( dbOp.code != "eosio.token") continue;
             if ( dbOp.tableName === "accounts") {
                 const balance = decodeBalance(dbOp);
                 if ( !balance ) continue;

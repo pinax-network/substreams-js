@@ -2,7 +2,7 @@ import { Substreams, download } from "../";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "QmUc8qGvJ8rVsTQV6L2pvZEEwpfw3K6LxcxX9FMvF4cPB4";
+const substream = "QmUHhFUSwubGKGTY3MQobnm9sHgYnTpY8yeEx3JUxYjSX1";
 const outputModules = ["map_action_traces"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
