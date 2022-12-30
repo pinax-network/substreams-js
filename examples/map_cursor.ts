@@ -1,17 +1,18 @@
-import { Substreams, download, saveCursor, readCursor } from "../";
+import { Substreams, download } from "../";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "QmUHhFUSwubGKGTY3MQobnm9sHgYnTpY8yeEx3JUxYjSX1";
+const substream = "https://eos.mypinata.cloud/ipfs/Qma9W6pQDnm5V7nu5N9yLARNg2K9jn2gcySLRYfLj2d9Ec";
 const outputModules = ["map_action_traces"];
-let lastCursor = readCursor(substream);
-let count = 0;
-const maxCount = 100;
+const startBlockNum = "2";
+const stopBlockNum = "1000";
+const startCursor = "DVJPAHvHlTWH9Gpr1jOJxqWwLpc_DFtrUwHlKhFBhYv_8iHBjJX3Amhyb0uEkqGh2xboHVqsiIvIEHd7p5FUtNa4w75m5CE7RnJ5xY7o_LfuefKhOVtPJ-hkVeuKZNLbWzzXYgryeOIEsd22OPreYBRmYM93KmWw2T9Q9NFRdKoR7CIxyzuvc8nQ2fuV8YsUqeUjQ-eglCrwB2Qpehxc";
 
 // Initialize Substreams
 const substreams = new Substreams(host, {
-    startBlockNum: "2",
-    startCursor: lastCursor,
+    startBlockNum,
+    stopBlockNum,
+    startCursor,
     outputModules,
 });
 
@@ -21,19 +22,13 @@ const substreams = new Substreams(host, {
     
     // keep track of cursor
     substreams.on("cursor", cursor => {
-        lastCursor = cursor;
-        console.log({count, cursor});
-        count++;
-
-        // stop streaming Substream after maximum count
-        if ( count > maxCount ) substreams.stop();  
+        console.log({cursor});
     });
     
     // start streaming Substream
     await substreams.start(modules);
 
     // end of Substream
-    saveCursor(substream, lastCursor);
     console.log("done");
     process.exit();
 })();

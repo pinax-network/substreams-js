@@ -1,13 +1,13 @@
-import { Substreams, download } from "../";
+import { Substreams, download } from "../dist";
 import { decodeBalance, decodeStat } from "./abi/eosio.token";
 import { DatabaseOperation } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
 const substream = "https://eos.mypinata.cloud/ipfs/QmSS4cYiaEHUjd2KddJo6xdmXjfVnq6iJJuKAUz26NhDmL";
-const outputModules = ["map_db_ops"];
-const startBlockNum = "283000000";
-const stopBlockNum = "283001000";
+const outputModules = ["store_accounts", "store_stat"];
+const startBlockNum = "2";
+const stopBlockNum = "1000";
 
 // Initialize Substreams
 const substreams = new Substreams(host, {
@@ -21,12 +21,12 @@ const substreams = new Substreams(host, {
     const {modules, registry} = await download(substream);
     
     // Find Protobuf message types
-    const DatabaseOperations = registry.findMessage("antelope.common.v1.DatabaseOperations");
-    if ( !DatabaseOperations) throw new Error("Could not find DatabaseOperations message type");
-    
-    substreams.on("mapOutput", output => {
-        const { dbOps } = DatabaseOperations.fromBinary(output.data.mapOutput.value);
-        for ( const dbOp of dbOps as DatabaseOperation[] ) {
+    const DatabaseOperation = registry.findMessage("antelope.common.v1.DatabaseOperation");
+    if ( !DatabaseOperation) throw new Error("Could not find DatabaseOperation message type");
+
+    substreams.on("storeDeltas", output => { 
+        for ( const { key, newValue } of output.data.storeDeltas.deltas ) {
+            const dbOp: DatabaseOperation = DatabaseOperation.fromBinary( newValue ) as any;
             if ( dbOp.code != "eosio.token") continue;
             if ( dbOp.tableName === "accounts") {
                 const balance = decodeBalance(dbOp);
@@ -35,7 +35,7 @@ const substreams = new Substreams(host, {
             }
             if ( dbOp.tableName === "stat") {
                 const supply = decodeStat(dbOp);
-                if ( !supply ) continue; 
+                if ( !supply ) continue;
                 console.log({contract: dbOp.code, supply});
             }
         }
