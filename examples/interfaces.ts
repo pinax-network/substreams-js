@@ -15,3 +15,7 @@ export interface DatabaseOperation {
     oldData: Uint8Array;      // old data (bytes)
     newData: Uint8Array;      // new data (bytes)
 }
+
+export interface Account {
+    balance: Uint8Array;
+}

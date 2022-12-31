@@ -1,10 +1,10 @@
 import { Substreams, download } from "../";
-import { decodeBalance, decodeStat } from "./abi/eosio.token";
+import { decodeAccount, decodeCurrencyStats } from "./abi/eosio.token";
 import { DatabaseOperation } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmSS4cYiaEHUjd2KddJo6xdmXjfVnq6iJJuKAUz26NhDmL";
+const substream = "https://eos.mypinata.cloud/ipfs/QmX4tSoz8bgGA1j6SjMMbtzt4y8AP6x37XpVwYLUN6eHCh";
 const outputModules = ["map_db_ops"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
@@ -29,14 +29,14 @@ const substreams = new Substreams(host, {
         for ( const dbOp of dbOps as DatabaseOperation[] ) {
             if ( dbOp.code != "eosio.token") continue;
             if ( dbOp.tableName === "accounts") {
-                const balance = decodeBalance(dbOp);
-                if ( !balance ) continue;
-                console.log({owner: dbOp.scope, balance});
+                const account = decodeAccount(dbOp.newData);
+                if ( !account ) continue;
+                console.log({owner: dbOp.scope, account});
             }
             if ( dbOp.tableName === "stat") {
-                const supply = decodeStat(dbOp);
-                if ( !supply ) continue; 
-                console.log({contract: dbOp.code, supply});
+                const stat = decodeCurrencyStats(dbOp.newData);
+                if ( !stat ) continue; 
+                console.log({contract: dbOp.code, stat});
             }
         }
     });
