@@ -5,21 +5,21 @@ import { GrpcTransport } from '@protobuf-ts/grpc-transport';
 
 // Substream generated code
 // $ buf generate buf.build/fubhy/substreams
-import { StreamClient } from './src/generated/sf/substreams/v1/substreams.client';
-import { Modules } from './src/generated/sf/substreams/v1/modules';
-import { BlockScopedData, ForkStep, Request } from './src/generated/sf/substreams/v1/substreams';
-import { StoreDeltas } from "./src/generated/sf/substreams/v1/substreams";
-import { Any } from "./src/generated/google/protobuf/any";
+import { StreamClient } from './generated/sf/substreams/v1/substreams.client';
+import { Modules } from './generated/sf/substreams/v1/modules';
+import { BlockScopedData, ForkStep, Request } from './generated/sf/substreams/v1/substreams';
+import { StoreDeltas } from "./generated/sf/substreams/v1/substreams";
+import { Any } from "./generated/google/protobuf/any";
 
 // Export utils & Typescript interfaces
-export * from "./src/generated/sf/substreams/v1/clock"
-export * from "./src/generated/sf/substreams/v1/modules"
-export * from "./src/generated/sf/substreams/v1/package"
-export * from "./src/generated/sf/substreams/v1/substreams"
-export * from "./src/utils";
+export * from "./generated/sf/substreams/v1/clock"
+export * from "./generated/sf/substreams/v1/modules"
+export * from "./generated/sf/substreams/v1/package"
+export * from "./generated/sf/substreams/v1/substreams"
+export * from "./utils";
 
 // Utils
-import { parseBlockData } from './src/utils';
+import { parseBlockData } from './utils';
 
 interface ModuleOutput {
     name: string;

@@ -21,6 +21,6 @@
     "forceConsistentCasingInFileNames": true  /* Disallow inconsistently-cased references to the same file. */
   },
   "files": [
-    "index.ts"
+    "src/index.ts"
   ]
 }

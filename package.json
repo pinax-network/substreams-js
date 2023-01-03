@@ -2,6 +2,7 @@
   "name": "substreams",
   "description": "Substreams Javascript consumer",
   "version": "0.1.7",
+  "homepage": "https://github.com/EOS-Nation/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "license": "MIT",
@@ -30,7 +31,9 @@
     "@protobuf-ts/runtime": "2.x",
     "@protobuf-ts/runtime-rpc": "2.x",
     "blockstore-core": "1.x",
-    "ipfs-unixfs-importer": "9.x"
+    "fetch-ponyfill": "*",
+    "ipfs-unixfs-importer": "9.x",
+    "protobufjs": "7.x"
   },
   "devDependencies": {
     "@greymass/eosio": "*",

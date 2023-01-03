@@ -1,6 +1,4 @@
-// import path from "node:path";
-// import fs from "node:fs";
-// import os from "node:os";
+import makeFetch from 'fetch-ponyfill'
 import { importer } from 'ipfs-unixfs-importer';
 import { MemoryBlockstore } from 'blockstore-core/memory';
 import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
@@ -9,6 +7,8 @@ import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
 import { Package } from './generated/sf/substreams/v1/package';
 import { Clock } from "./generated/sf/substreams/v1/clock";
 import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams";
+
+export const fetch = makeFetch().fetch
 
 export function printBlock( block: BlockScopedData, interval = 100 ) {
     const seconds = getSeconds(block.clock);
@@ -33,26 +33,6 @@ export function getSeconds( clock?: Clock ) {
 
 export const isIpfs = ( str: string ) => /^Qm[1-9A-Za-z]{44}$/.test(str);
 
-// export async function downloadBinary(ipfs: string) {
-//     if ( isIpfs(ipfs) ) return downloadToFile(ipfs);
-//     return readFileToBuffer(ipfs);
-// }
-
-// export function tmpFilepath(filename: string) {
-//     return path.join(os.tmpdir(), filename);
-// }
-
-// export function saveCursor(ipfs: string, cursor: string) {
-//     const filepath = tmpFilepath(ipfs) + "cursor.txt"
-//     fs.writeFileSync(filepath, cursor);
-// }
-
-// export function readCursor(ipfs: string) {
-//     const filepath = tmpFilepath(ipfs) + "cursor.txt"
-//     if ( !fs.existsSync(filepath) ) return "";
-//     return fs.readFileSync(filepath, "utf8");
-// }
-
 export async function download( url: string ) {
     if ( isIpfs(url) ) url = `https://eos.mypinata.cloud/ipfs/${url}`;
     const binary = await downloadBuffer(url);
@@ -62,31 +42,8 @@ export async function download( url: string ) {
     return { modules, registry };
 }
 
-// export async function readFileToBuffer(filepath: string) {
-//     console.log(`Reading from file system: ${filepath}`);
-//     filepath = path.isAbsolute(filepath) ? filepath : path.resolve(process.cwd(), filepath);
-//     if (!fs.existsSync(filepath)) throw new Error(`File not found: ${filepath}`);
-//     const binary = new Uint8Array(fs.readFileSync(filepath));
-//     const ipfs = await getIpfsHash(binary);
-//     console.log(`Substream: ${ipfs}`);
-//     return binary;
-// }
-
-// export async function downloadToFile(url: string) {
-//     // const filepath = tmpFilepath(url);
-//     // if (fs.existsSync(filepath)) {
-//     //     console.log(`File already exists: ${url}`);
-//     //     const buffer = fs.readFileSync(filepath);
-//     //     return new Uint8Array(buffer);
-//     // }
-//     const data = await downloadBuffer(url);
-//     // fs.writeFileSync(filepath, data);
-//     return data;
-// }
-
 export async function downloadBuffer(url: string) {
     console.log(`Downloading: ${url}`);
-    // const url = `https://eos.mypinata.cloud/ipfs/${ipfs}`
     const response = await fetch(url);
     if (!response.ok) throw new Error(`unexpected response ${response.statusText}`)
     console.log(`Download completed: ${url}`);
