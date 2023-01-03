@@ -1,7 +1,7 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "@bufbuild/protobuf": "1.x",
     "@grpc/grpc-js": "1.x",
     "@protobuf-ts/grpc-transport": "2.x",
+    "@protobuf-ts/runtime": "2.x",
     "@protobuf-ts/runtime-rpc": "2.x",
     "blockstore-core": "1.x",
     "ipfs-unixfs-importer": "9.x"
