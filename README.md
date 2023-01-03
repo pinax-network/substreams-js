@@ -1,8 +1,8 @@
 # `Substreams` **Javascript** consumer
 
-[![Build Status](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml)
+[![Build Status](https://github.com/EOS-Nation/substreams-js/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-js/actions/workflows/test.yml)
 [![npm version](https://badge.fury.io/js/substreams.svg)](https://badge.fury.io/js/substreams)
-![License](https://img.shields.io/github/license/EOS-Nation/substreams-nodejs)
+![License](https://img.shields.io/github/license/EOS-Nation/substreams-js)
 [![Try substreams on RunKit](https://badge.runkitcdn.com/substreams.svg)](https://npm.runkit.com/substreams)
 > `Substream` Javascript consumer library using native **Node.js** event emitters.
 
