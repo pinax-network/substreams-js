@@ -5,7 +5,7 @@ import { Name, Asset } from "@greymass/eosio";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmTCrw4ihEUVLZEYaYqSAoXerR6wmddfF9Q8KQULonD5xM";
+const substream = "https://eos.mypinata.cloud/ipfs/QmbttxBK9FbV8E8g8g8jp8rpYDvK8QzEwSx4bQmafngXpJ";
 const outputModules = ["store_accounts"];
 const startBlockNum = "2";
 const stopBlockNum = "1000";

@@ -3,7 +3,7 @@ import { TransferEvent } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmTCrw4ihEUVLZEYaYqSAoXerR6wmddfF9Q8KQULonD5xM";
+const substream = "https://eos.mypinata.cloud/ipfs/Qmdf7GT6jaT9NB3XPLvss8YxuHiSAC1PP1xm9UqLbuouYT";
 const outputModules = ["map_transfers"];
 const startBlockNum = "2";
 const stopBlockNum = "300";
