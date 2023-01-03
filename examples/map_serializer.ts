@@ -4,7 +4,7 @@ import { DatabaseOperation } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmX4tSoz8bgGA1j6SjMMbtzt4y8AP6x37XpVwYLUN6eHCh";
+const substream = "https://eos.mypinata.cloud/ipfs/QmSca7UixmNKWbMUcnV8owEL2Lh2WS2Nq63C3viv5mrST8";
 const outputModules = ["map_db_ops"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";

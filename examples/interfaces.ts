@@ -1,7 +1,45 @@
+export interface ActionTrace {
+    // trace information
+    block_num: number;
+    timestamp: TimeStamp;
+    trxId: string;
+    actionOrdinal: number;
+
+    // action
+    account: string;
+    receiver: string;
+    name: string;
+
+    // action data
+    json_data: string;
+}
+
+export interface TransferEvent {
+    // trace information
+    block_num: number;
+    timestamp: TimeStamp;
+    trxId: string;
+    actionOrdinal: number;
+
+    // action data
+    contract: string;
+    symcode: string;
+    precision: number;
+    from: string;
+    to: string;
+    amount: number;
+    memo: string;
+}
+
+export interface TimeStamp {
+    seconds: number;
+    nanos: 500000000;
+}
+
 export interface DatabaseOperation {
     // trace information
     blockNum: number;
-    timestamp: any;
+    timestamp: TimeStamp;
     trxId: string;
     actionIndex: number;
   
@@ -17,5 +55,9 @@ export interface DatabaseOperation {
 }
 
 export interface Account {
-    balance: Uint8Array;
+    account: Uint8Array;
+}
+
+export interface CurrencyStats {
+    currencyStats: Uint8Array;
 }

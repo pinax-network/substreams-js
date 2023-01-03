@@ -1,11 +1,12 @@
 import { Substreams, download } from "../";
+import { TransferEvent } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmSca7UixmNKWbMUcnV8owEL2Lh2WS2Nq63C3viv5mrST8";
-const outputModules = ["map_action_traces"];
-const startBlockNum = "283000000";
-const stopBlockNum = "283001000";
+const substream = "https://eos.mypinata.cloud/ipfs/QmTCrw4ihEUVLZEYaYqSAoXerR6wmddfF9Q8KQULonD5xM";
+const outputModules = ["map_transfers"];
+const startBlockNum = "2";
+const stopBlockNum = "300";
 
 // Initialize Substreams
 const substreams = new Substreams(host, {
@@ -19,13 +20,13 @@ const substreams = new Substreams(host, {
     const {modules, registry} = await download(substream);
     
     // Find Protobuf message types from registry
-    const ActionTraces = registry.findMessage("antelope.common.v1.ActionTraces");
-    if ( !ActionTraces) throw new Error("Could not find ActionTraces message type");
+    const TransferEvents = registry.findMessage("antelope.eosio.token.v1.TransferEvents");
+    if ( !TransferEvents) throw new Error("Could not find TransferEvents message type");
 
     substreams.on("mapOutput", output => {
-        const { actionTraces } = ActionTraces.fromBinary(output.data.mapOutput.value);
-        for ( const actionTrace of actionTraces ) {
-            console.log(actionTrace);
+        const { items } = TransferEvents.fromBinary(output.data.mapOutput.value);
+        for ( const item of items as TransferEvent[]) {
+            console.log(item);
         }
     });
 

@@ -140,8 +140,6 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                     const { deltas } = output.data.storeDeltas;
                     if ( !deltas.length ) continue;
                     this.emit("storeDeltas", output as StoreDelta);
-                } else {
-                    console.log(output.data.oneofKind)
                 }
             }
             this.emit("cursor", block.cursor);
