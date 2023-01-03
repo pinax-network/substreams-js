@@ -1,4 +1,4 @@
-# `Substreams` **Node.js** consumer
+# `Substreams` **Javascript** consumer
 
 [![Build Status](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-nodejs/actions/workflows/test.yml)
 [![npm version](https://badge.fury.io/js/substreams.svg)](https://badge.fury.io/js/substreams)
