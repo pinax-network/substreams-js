@@ -1,7 +1,7 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "homepage": "https://github.com/EOS-Nation/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
@@ -22,7 +22,7 @@
     "test": "ts-node **/*.spec.ts"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=16"
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.x",
@@ -30,13 +30,9 @@
     "@protobuf-ts/grpc-transport": "2.x",
     "@protobuf-ts/runtime": "2.x",
     "@protobuf-ts/runtime-rpc": "2.x",
-    "blockstore-core": "1.x",
-    "fetch-ponyfill": "*",
-    "ipfs-unixfs-importer": "9.x",
-    "protobufjs": "7.x"
+    "fetch-ponyfill": "*"
   },
   "devDependencies": {
-    "@greymass/eosio": "*",
     "@types/node": "*",
     "ts-node": "*",
     "typed-emitter": "2.x",

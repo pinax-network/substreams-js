@@ -1,6 +1,4 @@
 import makeFetch from 'fetch-ponyfill'
-import { importer } from 'ipfs-unixfs-importer';
-import { MemoryBlockstore } from 'blockstore-core/memory';
 import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
 
 // Substream auto-generated
@@ -51,14 +49,4 @@ export async function downloadBuffer(url: string) {
     const blob = await response.blob();
     const buffer = await blob.arrayBuffer();
     return new Uint8Array(buffer);
-}
-
-const blockstore = new MemoryBlockstore();
-
-export async function getIpfsHash(binary: Uint8Array) {
-    const content = Buffer.from(binary);
-    for await (const { cid } of importer([{content}], blockstore, {onlyHash: true})) {
-        return cid.toString();
-    }
-    throw new Error("Failed to read IPFS hash from ReadStream content");
 }

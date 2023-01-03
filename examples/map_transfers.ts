@@ -1,5 +1,4 @@
 import { Substreams, download } from "../";
-import { TransferEvent } from "./interfaces";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
@@ -25,7 +24,7 @@ const substreams = new Substreams(host, {
 
     substreams.on("mapOutput", output => {
         const { items } = TransferEvents.fromBinary(output.data.mapOutput.value);
-        for ( const item of items as TransferEvent[]) {
+        for ( const item of items ) {
             console.log(item);
         }
     });
