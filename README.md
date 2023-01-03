@@ -52,7 +52,7 @@ import { Substreams, download } from "substreams";
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
-const substream = "Qmdf7GT6jaT9NB3XPLvss8YxuHiSAC1PP1xm9UqLbuouYT";
+const substream = "https://eos.mypinata.cloud/ipfs/Qmdf7GT6jaT9NB3XPLvss8YxuHiSAC1PP1xm9UqLbuouYT";
 const outputModules = ["map_action_traces"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
