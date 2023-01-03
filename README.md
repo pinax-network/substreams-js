@@ -4,7 +4,7 @@
 [![npm version](https://badge.fury.io/js/substreams.svg)](https://badge.fury.io/js/substreams)
 ![License](https://img.shields.io/github/license/EOS-Nation/substreams-js)
 [![Try substreams on RunKit](https://badge.runkitcdn.com/substreams.svg)](https://npm.runkit.com/substreams)
-> `Substream` Javascript consumer library using native **Node.js** event emitters.
+> `Substream` **Javascript** consumer library using [**Node.js** Event emitters](https://nodejs.dev/en/learn/the-nodejs-event-emitter/).
 
 ## Install
 
