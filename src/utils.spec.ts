@@ -2,15 +2,16 @@
 
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { formatDate, getIpfsHash } from './utils';
+import { formatDate, isIpfs } from './utils';
 
 describe('substreams', () => {
     it("formatDate", () => {
         assert.equal(formatDate(1670515200), "2022-12-08T16:00:00");
     });
 
-    it("getIpfsHash", async () => {
-        assert.equal(await getIpfsHash(new Uint8Array([1,2,3,4,5])), "QmUatvHNjq696qkB8SBz5VBytcEeTrM1VwFyy4Rt4Z43mX");
+    it("isIpfs", async () => {
+        assert.equal(isIpfs("QmUatvHNjq696qkB8SBz5VBytcEeTrM1VwFyy4Rt4Z43mX"), true);
+        assert.equal(isIpfs("not IPFS"), false);
     });
 });
 
