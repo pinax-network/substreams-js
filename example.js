@@ -1,4 +1,4 @@
-import { Substreams, download } from "../";
+const { Substreams, download } = require("substreams");
 
 // User input
 const host = "eos.firehose.eosnation.io:9001";
