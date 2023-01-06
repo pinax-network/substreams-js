@@ -42,6 +42,21 @@ export interface Request {
      */
     irreversibilityCondition: string;
     /**
+     * By default, the engine runs in developer mode, with richer and deeper output,
+     * * support for multiple `output_modules`, of `store` and `map` kinds
+     * * support for `initial_store_snapshot_for_modules`
+     * * log outputs for output modules
+     *
+     * With `production_mode`, however, you trade off functionality for high speed, where it:
+     * * restricts the possible requested `output_modules` to a single mapper module,
+     * * turns off support for `initial_store_snapshot_for_modules`,
+     * * still streams output linearly, with a cursor, but at higher speeds
+     * * and purges log outputs from responses.
+     *
+     * @generated from protobuf field: bool production_mode = 9;
+     */
+    productionMode: boolean;
+    /**
      * @generated from protobuf field: sf.substreams.v1.Modules modules = 6;
      */
     modules?: Modules;
@@ -50,9 +65,15 @@ export interface Request {
      */
     outputModules: string[];
     /**
-     * @generated from protobuf field: repeated string initial_store_snapshot_for_modules = 8;
+     * Available only in developer mode
+     *
+     * @generated from protobuf field: repeated string debug_initial_store_snapshot_for_modules = 8;
      */
-    initialStoreSnapshotForModules: string[];
+    debugInitialStoreSnapshotForModules: string[];
+    /**
+     * @generated from protobuf field: string output_module = 10;
+     */
+    outputModule: string;
 }
 /**
  * @generated from protobuf message sf.substreams.v1.Response
@@ -62,23 +83,33 @@ export interface Response {
      * @generated from protobuf oneof: message
      */
     message: {
+        oneofKind: "session";
+        /**
+         * @generated from protobuf field: sf.substreams.v1.SessionInit session = 5;
+         */
+        session: SessionInit; // Always sent first
+    } | {
         oneofKind: "progress";
         /**
          * @generated from protobuf field: sf.substreams.v1.ModulesProgress progress = 1;
          */
         progress: ModulesProgress; // Progress of data preparation, before sending in the stream of `data` events.
     } | {
-        oneofKind: "snapshotData";
+        oneofKind: "debugSnapshotData";
         /**
-         * @generated from protobuf field: sf.substreams.v1.InitialSnapshotData snapshot_data = 2;
+         * Available only in developer mode, and only if `debug_initial_store_snapshot_for_modules` is set.
+         *
+         * @generated from protobuf field: sf.substreams.v1.InitialSnapshotData debug_snapshot_data = 2;
          */
-        snapshotData: InitialSnapshotData;
+        debugSnapshotData: InitialSnapshotData;
     } | {
-        oneofKind: "snapshotComplete";
+        oneofKind: "debugSnapshotComplete";
         /**
-         * @generated from protobuf field: sf.substreams.v1.InitialSnapshotComplete snapshot_complete = 3;
+         * Available only in developer mode, and only if `debug_initial_store_snapshot_for_modules` is set.
+         *
+         * @generated from protobuf field: sf.substreams.v1.InitialSnapshotComplete debug_snapshot_complete = 3;
          */
-        snapshotComplete: InitialSnapshotComplete;
+        debugSnapshotComplete: InitialSnapshotComplete;
     } | {
         oneofKind: "data";
         /**
@@ -88,6 +119,15 @@ export interface Response {
     } | {
         oneofKind: undefined;
     };
+}
+/**
+ * @generated from protobuf message sf.substreams.v1.SessionInit
+ */
+export interface SessionInit {
+    /**
+     * @generated from protobuf field: string trace_id = 1;
+     */
+    traceId: string;
 }
 /**
  * @generated from protobuf message sf.substreams.v1.InitialSnapshotComplete
@@ -158,26 +198,47 @@ export interface ModuleOutput {
          */
         mapOutput: Any;
     } | {
-        oneofKind: "storeDeltas";
+        oneofKind: "debugStoreDeltas";
         /**
-         * @generated from protobuf field: sf.substreams.v1.StoreDeltas store_deltas = 3;
+         * StoreDeltas are produced for store modules in development mode.
+         * It is not possible to retrieve store models in production, with parallelization
+         * enabled. If you need the deltas directly, write a pass through mapper module
+         * that will get them down to you.
+         *
+         * @generated from protobuf field: sf.substreams.v1.StoreDeltas debug_store_deltas = 3;
          */
-        storeDeltas: StoreDeltas;
+        debugStoreDeltas: StoreDeltas;
     } | {
         oneofKind: undefined;
     };
     /**
-     * @generated from protobuf field: repeated string logs = 4;
+     * @generated from protobuf field: repeated string debug_logs = 4;
      */
-    logs: string[];
+    debugLogs: string[];
     /**
      * LogsTruncated is a flag that tells you if you received all the logs or if they
      * were truncated because you logged too much (fixed limit currently is set to 128 KiB).
      *
-     * @generated from protobuf field: bool logs_truncated = 5;
+     * @generated from protobuf field: bool debug_logs_truncated = 5;
      */
-    logsTruncated: boolean;
+    debugLogsTruncated: boolean;
+    /**
+     * @generated from protobuf field: bool cached = 6;
+     */
+    cached: boolean;
 }
+// think about:
+// message ModuleOutput { ...
+//   ModuleOutputDebug debug_info = 6;
+// ...}
+// message ModuleOutputDebug {
+//  StoreDeltas store_deltas = 3;
+//  repeated string logs = 4;
+//  // LogsTruncated is a flag that tells you if you received all the logs or if they
+//  // were truncated because you logged too much (fixed limit currently is set to 128 KiB).
+//  bool logs_truncated = 5;
+// }
+
 /**
  * @generated from protobuf message sf.substreams.v1.ModulesProgress
  */
@@ -256,6 +317,18 @@ export interface ModuleProgress_ProcessedBytes {
      * @generated from protobuf field: uint64 total_bytes_written = 2;
      */
     totalBytesWritten: string;
+    /**
+     * @generated from protobuf field: uint64 bytes_read_delta = 3;
+     */
+    bytesReadDelta: string;
+    /**
+     * @generated from protobuf field: uint64 bytes_written_delta = 4;
+     */
+    bytesWrittenDelta: string;
+    /**
+     * @generated from protobuf field: uint64 nano_seconds_delta = 5;
+     */
+    nanoSecondsDelta: string;
 }
 /**
  * @generated from protobuf message sf.substreams.v1.ModuleProgress.Failed
@@ -282,11 +355,11 @@ export interface ModuleProgress_Failed {
  */
 export interface BlockRange {
     /**
-     * @generated from protobuf field: uint64 start_block = 1;
+     * @generated from protobuf field: uint64 start_block = 2;
      */
     startBlock: string;
     /**
-     * @generated from protobuf field: uint64 end_block = 2;
+     * @generated from protobuf field: uint64 end_block = 3;
      */
     endBlock: string;
 }
@@ -402,13 +475,15 @@ class Request$Type extends MessageType<Request> {
             { no: 3, name: "stop_block_num", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
             { no: 4, name: "fork_steps", kind: "enum", repeat: 1 /*RepeatType.PACKED*/, T: () => ["sf.substreams.v1.ForkStep", ForkStep] },
             { no: 5, name: "irreversibility_condition", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 9, name: "production_mode", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
             { no: 6, name: "modules", kind: "message", T: () => Modules },
             { no: 7, name: "output_modules", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
-            { no: 8, name: "initial_store_snapshot_for_modules", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
+            { no: 8, name: "debug_initial_store_snapshot_for_modules", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 10, name: "output_module", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<Request>): Request {
-        const message = { startBlockNum: "0", startCursor: "", stopBlockNum: "0", forkSteps: [], irreversibilityCondition: "", outputModules: [], initialStoreSnapshotForModules: [] };
+        const message = { startBlockNum: "0", startCursor: "", stopBlockNum: "0", forkSteps: [], irreversibilityCondition: "", productionMode: false, outputModules: [], debugInitialStoreSnapshotForModules: [], outputModule: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<Request>(this, message, value);
@@ -438,14 +513,20 @@ class Request$Type extends MessageType<Request> {
                 case /* string irreversibility_condition */ 5:
                     message.irreversibilityCondition = reader.string();
                     break;
+                case /* bool production_mode */ 9:
+                    message.productionMode = reader.bool();
+                    break;
                 case /* sf.substreams.v1.Modules modules */ 6:
                     message.modules = Modules.internalBinaryRead(reader, reader.uint32(), options, message.modules);
                     break;
                 case /* repeated string output_modules */ 7:
                     message.outputModules.push(reader.string());
                     break;
-                case /* repeated string initial_store_snapshot_for_modules */ 8:
-                    message.initialStoreSnapshotForModules.push(reader.string());
+                case /* repeated string debug_initial_store_snapshot_for_modules */ 8:
+                    message.debugInitialStoreSnapshotForModules.push(reader.string());
+                    break;
+                case /* string output_module */ 10:
+                    message.outputModule = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -478,15 +559,21 @@ class Request$Type extends MessageType<Request> {
         /* string irreversibility_condition = 5; */
         if (message.irreversibilityCondition !== "")
             writer.tag(5, WireType.LengthDelimited).string(message.irreversibilityCondition);
+        /* bool production_mode = 9; */
+        if (message.productionMode !== false)
+            writer.tag(9, WireType.Varint).bool(message.productionMode);
         /* sf.substreams.v1.Modules modules = 6; */
         if (message.modules)
             Modules.internalBinaryWrite(message.modules, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
         /* repeated string output_modules = 7; */
         for (let i = 0; i < message.outputModules.length; i++)
             writer.tag(7, WireType.LengthDelimited).string(message.outputModules[i]);
-        /* repeated string initial_store_snapshot_for_modules = 8; */
-        for (let i = 0; i < message.initialStoreSnapshotForModules.length; i++)
-            writer.tag(8, WireType.LengthDelimited).string(message.initialStoreSnapshotForModules[i]);
+        /* repeated string debug_initial_store_snapshot_for_modules = 8; */
+        for (let i = 0; i < message.debugInitialStoreSnapshotForModules.length; i++)
+            writer.tag(8, WireType.LengthDelimited).string(message.debugInitialStoreSnapshotForModules[i]);
+        /* string output_module = 10; */
+        if (message.outputModule !== "")
+            writer.tag(10, WireType.LengthDelimited).string(message.outputModule);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -501,9 +588,10 @@ export const Request = new Request$Type();
 class Response$Type extends MessageType<Response> {
     constructor() {
         super("sf.substreams.v1.Response", [
+            { no: 5, name: "session", kind: "message", oneof: "message", T: () => SessionInit },
             { no: 1, name: "progress", kind: "message", oneof: "message", T: () => ModulesProgress },
-            { no: 2, name: "snapshot_data", kind: "message", oneof: "message", T: () => InitialSnapshotData },
-            { no: 3, name: "snapshot_complete", kind: "message", oneof: "message", T: () => InitialSnapshotComplete },
+            { no: 2, name: "debug_snapshot_data", kind: "message", oneof: "message", T: () => InitialSnapshotData },
+            { no: 3, name: "debug_snapshot_complete", kind: "message", oneof: "message", T: () => InitialSnapshotComplete },
             { no: 4, name: "data", kind: "message", oneof: "message", T: () => BlockScopedData }
         ]);
     }
@@ -519,22 +607,28 @@ class Response$Type extends MessageType<Response> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
+                case /* sf.substreams.v1.SessionInit session */ 5:
+                    message.message = {
+                        oneofKind: "session",
+                        session: SessionInit.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).session)
+                    };
+                    break;
                 case /* sf.substreams.v1.ModulesProgress progress */ 1:
                     message.message = {
                         oneofKind: "progress",
                         progress: ModulesProgress.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).progress)
                     };
                     break;
-                case /* sf.substreams.v1.InitialSnapshotData snapshot_data */ 2:
+                case /* sf.substreams.v1.InitialSnapshotData debug_snapshot_data */ 2:
                     message.message = {
-                        oneofKind: "snapshotData",
-                        snapshotData: InitialSnapshotData.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).snapshotData)
+                        oneofKind: "debugSnapshotData",
+                        debugSnapshotData: InitialSnapshotData.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).debugSnapshotData)
                     };
                     break;
-                case /* sf.substreams.v1.InitialSnapshotComplete snapshot_complete */ 3:
+                case /* sf.substreams.v1.InitialSnapshotComplete debug_snapshot_complete */ 3:
                     message.message = {
-                        oneofKind: "snapshotComplete",
-                        snapshotComplete: InitialSnapshotComplete.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).snapshotComplete)
+                        oneofKind: "debugSnapshotComplete",
+                        debugSnapshotComplete: InitialSnapshotComplete.internalBinaryRead(reader, reader.uint32(), options, (message.message as any).debugSnapshotComplete)
                     };
                     break;
                 case /* sf.substreams.v1.BlockScopedData data */ 4:
@@ -555,15 +649,18 @@ class Response$Type extends MessageType<Response> {
         return message;
     }
     internalBinaryWrite(message: Response, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* sf.substreams.v1.SessionInit session = 5; */
+        if (message.message.oneofKind === "session")
+            SessionInit.internalBinaryWrite(message.message.session, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         /* sf.substreams.v1.ModulesProgress progress = 1; */
         if (message.message.oneofKind === "progress")
             ModulesProgress.internalBinaryWrite(message.message.progress, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
-        /* sf.substreams.v1.InitialSnapshotData snapshot_data = 2; */
-        if (message.message.oneofKind === "snapshotData")
-            InitialSnapshotData.internalBinaryWrite(message.message.snapshotData, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
-        /* sf.substreams.v1.InitialSnapshotComplete snapshot_complete = 3; */
-        if (message.message.oneofKind === "snapshotComplete")
-            InitialSnapshotComplete.internalBinaryWrite(message.message.snapshotComplete, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* sf.substreams.v1.InitialSnapshotData debug_snapshot_data = 2; */
+        if (message.message.oneofKind === "debugSnapshotData")
+            InitialSnapshotData.internalBinaryWrite(message.message.debugSnapshotData, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* sf.substreams.v1.InitialSnapshotComplete debug_snapshot_complete = 3; */
+        if (message.message.oneofKind === "debugSnapshotComplete")
+            InitialSnapshotComplete.internalBinaryWrite(message.message.debugSnapshotComplete, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
         /* sf.substreams.v1.BlockScopedData data = 4; */
         if (message.message.oneofKind === "data")
             BlockScopedData.internalBinaryWrite(message.message.data, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
@@ -577,6 +674,53 @@ class Response$Type extends MessageType<Response> {
  * @generated MessageType for protobuf message sf.substreams.v1.Response
  */
 export const Response = new Response$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class SessionInit$Type extends MessageType<SessionInit> {
+    constructor() {
+        super("sf.substreams.v1.SessionInit", [
+            { no: 1, name: "trace_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<SessionInit>): SessionInit {
+        const message = { traceId: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<SessionInit>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: SessionInit): SessionInit {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string trace_id */ 1:
+                    message.traceId = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: SessionInit, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string trace_id = 1; */
+        if (message.traceId !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.traceId);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message sf.substreams.v1.SessionInit
+ */
+export const SessionInit = new SessionInit$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class InitialSnapshotComplete$Type extends MessageType<InitialSnapshotComplete> {
     constructor() {
@@ -766,13 +910,14 @@ class ModuleOutput$Type extends MessageType<ModuleOutput> {
         super("sf.substreams.v1.ModuleOutput", [
             { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
             { no: 2, name: "map_output", kind: "message", oneof: "data", T: () => Any },
-            { no: 3, name: "store_deltas", kind: "message", oneof: "data", T: () => StoreDeltas },
-            { no: 4, name: "logs", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
-            { no: 5, name: "logs_truncated", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
+            { no: 3, name: "debug_store_deltas", kind: "message", oneof: "data", T: () => StoreDeltas },
+            { no: 4, name: "debug_logs", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "debug_logs_truncated", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 6, name: "cached", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<ModuleOutput>): ModuleOutput {
-        const message = { name: "", data: { oneofKind: undefined }, logs: [], logsTruncated: false };
+        const message = { name: "", data: { oneofKind: undefined }, debugLogs: [], debugLogsTruncated: false, cached: false };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ModuleOutput>(this, message, value);
@@ -792,17 +937,20 @@ class ModuleOutput$Type extends MessageType<ModuleOutput> {
                         mapOutput: Any.internalBinaryRead(reader, reader.uint32(), options, (message.data as any).mapOutput)
                     };
                     break;
-                case /* sf.substreams.v1.StoreDeltas store_deltas */ 3:
+                case /* sf.substreams.v1.StoreDeltas debug_store_deltas */ 3:
                     message.data = {
-                        oneofKind: "storeDeltas",
-                        storeDeltas: StoreDeltas.internalBinaryRead(reader, reader.uint32(), options, (message.data as any).storeDeltas)
+                        oneofKind: "debugStoreDeltas",
+                        debugStoreDeltas: StoreDeltas.internalBinaryRead(reader, reader.uint32(), options, (message.data as any).debugStoreDeltas)
                     };
                     break;
-                case /* repeated string logs */ 4:
-                    message.logs.push(reader.string());
+                case /* repeated string debug_logs */ 4:
+                    message.debugLogs.push(reader.string());
                     break;
-                case /* bool logs_truncated */ 5:
-                    message.logsTruncated = reader.bool();
+                case /* bool debug_logs_truncated */ 5:
+                    message.debugLogsTruncated = reader.bool();
+                    break;
+                case /* bool cached */ 6:
+                    message.cached = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -822,15 +970,18 @@ class ModuleOutput$Type extends MessageType<ModuleOutput> {
         /* google.protobuf.Any map_output = 2; */
         if (message.data.oneofKind === "mapOutput")
             Any.internalBinaryWrite(message.data.mapOutput, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
-        /* sf.substreams.v1.StoreDeltas store_deltas = 3; */
-        if (message.data.oneofKind === "storeDeltas")
-            StoreDeltas.internalBinaryWrite(message.data.storeDeltas, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
-        /* repeated string logs = 4; */
-        for (let i = 0; i < message.logs.length; i++)
-            writer.tag(4, WireType.LengthDelimited).string(message.logs[i]);
-        /* bool logs_truncated = 5; */
-        if (message.logsTruncated !== false)
-            writer.tag(5, WireType.Varint).bool(message.logsTruncated);
+        /* sf.substreams.v1.StoreDeltas debug_store_deltas = 3; */
+        if (message.data.oneofKind === "debugStoreDeltas")
+            StoreDeltas.internalBinaryWrite(message.data.debugStoreDeltas, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* repeated string debug_logs = 4; */
+        for (let i = 0; i < message.debugLogs.length; i++)
+            writer.tag(4, WireType.LengthDelimited).string(message.debugLogs[i]);
+        /* bool debug_logs_truncated = 5; */
+        if (message.debugLogsTruncated !== false)
+            writer.tag(5, WireType.Varint).bool(message.debugLogsTruncated);
+        /* bool cached = 6; */
+        if (message.cached !== false)
+            writer.tag(6, WireType.Varint).bool(message.cached);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -1074,11 +1225,14 @@ class ModuleProgress_ProcessedBytes$Type extends MessageType<ModuleProgress_Proc
     constructor() {
         super("sf.substreams.v1.ModuleProgress.ProcessedBytes", [
             { no: 1, name: "total_bytes_read", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
-            { no: 2, name: "total_bytes_written", kind: "scalar", T: 4 /*ScalarType.UINT64*/ }
+            { no: 2, name: "total_bytes_written", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
+            { no: 3, name: "bytes_read_delta", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
+            { no: 4, name: "bytes_written_delta", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
+            { no: 5, name: "nano_seconds_delta", kind: "scalar", T: 4 /*ScalarType.UINT64*/ }
         ]);
     }
     create(value?: PartialMessage<ModuleProgress_ProcessedBytes>): ModuleProgress_ProcessedBytes {
-        const message = { totalBytesRead: "0", totalBytesWritten: "0" };
+        const message = { totalBytesRead: "0", totalBytesWritten: "0", bytesReadDelta: "0", bytesWrittenDelta: "0", nanoSecondsDelta: "0" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ModuleProgress_ProcessedBytes>(this, message, value);
@@ -1094,6 +1248,15 @@ class ModuleProgress_ProcessedBytes$Type extends MessageType<ModuleProgress_Proc
                     break;
                 case /* uint64 total_bytes_written */ 2:
                     message.totalBytesWritten = reader.uint64().toString();
+                    break;
+                case /* uint64 bytes_read_delta */ 3:
+                    message.bytesReadDelta = reader.uint64().toString();
+                    break;
+                case /* uint64 bytes_written_delta */ 4:
+                    message.bytesWrittenDelta = reader.uint64().toString();
+                    break;
+                case /* uint64 nano_seconds_delta */ 5:
+                    message.nanoSecondsDelta = reader.uint64().toString();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -1113,6 +1276,15 @@ class ModuleProgress_ProcessedBytes$Type extends MessageType<ModuleProgress_Proc
         /* uint64 total_bytes_written = 2; */
         if (message.totalBytesWritten !== "0")
             writer.tag(2, WireType.Varint).uint64(message.totalBytesWritten);
+        /* uint64 bytes_read_delta = 3; */
+        if (message.bytesReadDelta !== "0")
+            writer.tag(3, WireType.Varint).uint64(message.bytesReadDelta);
+        /* uint64 bytes_written_delta = 4; */
+        if (message.bytesWrittenDelta !== "0")
+            writer.tag(4, WireType.Varint).uint64(message.bytesWrittenDelta);
+        /* uint64 nano_seconds_delta = 5; */
+        if (message.nanoSecondsDelta !== "0")
+            writer.tag(5, WireType.Varint).uint64(message.nanoSecondsDelta);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -1188,8 +1360,8 @@ export const ModuleProgress_Failed = new ModuleProgress_Failed$Type();
 class BlockRange$Type extends MessageType<BlockRange> {
     constructor() {
         super("sf.substreams.v1.BlockRange", [
-            { no: 1, name: "start_block", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
-            { no: 2, name: "end_block", kind: "scalar", T: 4 /*ScalarType.UINT64*/ }
+            { no: 2, name: "start_block", kind: "scalar", T: 4 /*ScalarType.UINT64*/ },
+            { no: 3, name: "end_block", kind: "scalar", T: 4 /*ScalarType.UINT64*/ }
         ]);
     }
     create(value?: PartialMessage<BlockRange>): BlockRange {
@@ -1204,10 +1376,10 @@ class BlockRange$Type extends MessageType<BlockRange> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* uint64 start_block */ 1:
+                case /* uint64 start_block */ 2:
                     message.startBlock = reader.uint64().toString();
                     break;
-                case /* uint64 end_block */ 2:
+                case /* uint64 end_block */ 3:
                     message.endBlock = reader.uint64().toString();
                     break;
                 default:
@@ -1222,12 +1394,12 @@ class BlockRange$Type extends MessageType<BlockRange> {
         return message;
     }
     internalBinaryWrite(message: BlockRange, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* uint64 start_block = 1; */
+        /* uint64 start_block = 2; */
         if (message.startBlock !== "0")
-            writer.tag(1, WireType.Varint).uint64(message.startBlock);
-        /* uint64 end_block = 2; */
+            writer.tag(2, WireType.Varint).uint64(message.startBlock);
+        /* uint64 end_block = 3; */
         if (message.endBlock !== "0")
-            writer.tag(2, WireType.Varint).uint64(message.endBlock);
+            writer.tag(3, WireType.Varint).uint64(message.endBlock);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

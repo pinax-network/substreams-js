@@ -155,7 +155,13 @@ export enum Module_KindStore_UpdatePolicy {
      *
      * @generated from protobuf enum value: UPDATE_POLICY_MAX = 5;
      */
-    MAX = 5
+    MAX = 5,
+    /**
+     * Provides a store where you can `append()` keys, where two stores merge by concatenating the bytes in order.
+     *
+     * @generated from protobuf enum value: UPDATE_POLICY_APPEND = 6;
+     */
+    APPEND = 6
 }
 /**
  * @generated from protobuf message sf.substreams.v1.Module.Input

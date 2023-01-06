@@ -4,17 +4,17 @@ import { credentials, Metadata } from '@grpc/grpc-js';
 import { GrpcTransport } from '@protobuf-ts/grpc-transport';
 
 // Substream generated code
-// $ buf generate buf.build/fubhy/substreams
+// buf generate buf.build/streamingfast/substreams:develop
 import { StreamClient } from './generated/sf/substreams/v1/substreams.client';
 import { Modules } from './generated/sf/substreams/v1/modules';
 import { BlockScopedData, ForkStep, Request } from './generated/sf/substreams/v1/substreams';
 import { StoreDeltas } from "./generated/sf/substreams/v1/substreams";
-import { Any } from "./generated/google/protobuf/any";
 
 // Export utils & Typescript interfaces
 export * from "./generated/sf/substreams/v1/clock"
 export * from "./generated/sf/substreams/v1/modules"
 export * from "./generated/sf/substreams/v1/package"
+export * from "./generated/sf/substreams/v1/substreams.client"
 export * from "./generated/sf/substreams/v1/substreams"
 export * from "./utils";
 
@@ -23,8 +23,15 @@ import { parseBlockData } from './utils';
 
 interface ModuleOutput {
     name: string;
-    logs: string[];
-    logsTruncated: boolean;
+    debugLogs: string[];
+    debugLogsTruncated: boolean;
+    cached: boolean;
+    data: any;
+}
+
+interface Any {
+    typeUrl: string;
+    value: Uint8Array;
 }
 
 interface MapOutput extends ModuleOutput {
@@ -36,15 +43,15 @@ interface MapOutput extends ModuleOutput {
 
 interface StoreDelta extends ModuleOutput {
     data: {
-        oneofKind: "storeDeltas";
-        storeDeltas: StoreDeltas;
+        oneofKind: "debugStoreDeltas";
+        debugStoreDeltas: StoreDeltas;
     }
 }
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
     mapOutput: (output: MapOutput) => void;
-    storeDeltas: (output: StoreDelta) => void;
+    debugStoreDeltas: (output: StoreDelta) => void;
     cursor: (cursor: string) => void;
 }
 
@@ -136,10 +143,10 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                     this.emit("mapOutput", output as MapOutput);
                 }
 
-                else if ( output.data.oneofKind == "storeDeltas" ) {
-                    const { deltas } = output.data.storeDeltas;
+                else if ( output.data.oneofKind == "debugStoreDeltas" ) {
+                    const { deltas } = output.data.debugStoreDeltas;
                     if ( !deltas.length ) continue;
-                    this.emit("storeDeltas", output as StoreDelta);
+                    this.emit("debugStoreDeltas", output as StoreDelta);
                 }
             }
             this.emit("cursor", block.cursor);
