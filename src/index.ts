@@ -7,8 +7,9 @@ import { GrpcTransport } from '@protobuf-ts/grpc-transport';
 // buf generate buf.build/streamingfast/substreams:develop
 import { StreamClient } from './generated/sf/substreams/v1/substreams.client';
 import { Modules } from './generated/sf/substreams/v1/modules';
-import { BlockScopedData, ForkStep, Request } from './generated/sf/substreams/v1/substreams';
+import { BlockScopedData, ForkStep, Request, ModuleOutput } from './generated/sf/substreams/v1/substreams';
 import { StoreDeltas } from "./generated/sf/substreams/v1/substreams";
+import { Any } from "@bufbuild/protobuf"
 
 // Export utils & Typescript interfaces
 export * from "./generated/sf/substreams/v1/clock"
@@ -20,19 +21,6 @@ export * from "./utils";
 
 // Utils
 import { parseBlockData } from './utils';
-
-interface ModuleOutput {
-    name: string;
-    debugLogs: string[];
-    debugLogsTruncated: boolean;
-    cached: boolean;
-    data: any;
-}
-
-interface Any {
-    typeUrl: string;
-    value: Uint8Array;
-}
 
 interface MapOutput extends ModuleOutput {
     data: {
