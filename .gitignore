@@ -4,3 +4,4 @@ node_modules
 .env
 !rollup.config.js
 !example.js
+generated
