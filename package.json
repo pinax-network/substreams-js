@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "npm run codegen && npm run test && npm run build",
     "codegen": "buf generate buf.build/fubhy/substreams",
     "test": "ts-node **/*.spec.ts"
   },
