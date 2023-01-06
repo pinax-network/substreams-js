@@ -7,3 +7,4 @@ plugins:
       - long_type_string
       - eslint_disable
       - client_generic
+      - ts_nocheck
