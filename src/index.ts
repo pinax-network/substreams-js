@@ -50,33 +50,40 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     // configs
     public startBlockNum?: string;
     public stopBlockNum?: string;
+    public outputModule?: string;
     public outputModules?: string[];
     public cursor?: string;
     public startCursor?: string;
     public irreversibilityCondition?: string;
     public forkSteps?: ForkStep[];
     public initialStoreSnapshotForModules?: string[];
+    public debugInitialStoreSnapshotForModules?: string[];
+    public productionMode?: boolean;
 
     private stopped = false;
 
-    constructor(host: string, options: {
+    constructor(host: string, outputModule?: string | string[], options: {
         startBlockNum?: string,
         stopBlockNum?: string,
-        outputModules?: string[],
         authorization?: string,
         startCursor?: string,
         forkSteps?: ForkStep[],
         irreversibilityCondition?: string;
+        productionMode?: boolean;
         initialStoreSnapshotForModules?: string[],
+        debugInitialStoreSnapshotForModules?: string[],
     } = {}) {
         super();
+        if ( Array.isArray(outputModule) ) this.outputModules = outputModule;
+        else this.outputModule = outputModule;
         this.startBlockNum = options.startBlockNum;
         this.stopBlockNum = options.stopBlockNum;
-        this.outputModules = options.outputModules;
         this.startCursor = options.startCursor;
         this.irreversibilityCondition = options.irreversibilityCondition;
-        this.forkSteps = options.forkSteps ?? [ForkStep.STEP_IRREVERSIBLE];
+        this.forkSteps = options.forkSteps;
         this.initialStoreSnapshotForModules = options.initialStoreSnapshotForModules;
+        this.productionMode = options.productionMode;
+        this.debugInitialStoreSnapshotForModules = options.debugInitialStoreSnapshotForModules;
 
         // Credentials
         const metadata = new Metadata();
@@ -106,10 +113,16 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         if ( this.startBlockNum ) {
             const startBlockNum = Number(this.startBlockNum);
             if ( !Number.isInteger(startBlockNum)) throw new Error("startBlockNum must be an integer");
-            if ( startBlockNum <= 0 ) throw new Error("startBlockNum must be positive");
         }
-        if ( !this.outputModules || !this.outputModules.length ) throw new Error("outputModules is empty");
-        if ( !this.forkSteps || !this.forkSteps.length ) throw new Error("forkSteps is empty");
+
+        // production mode validation
+        if ( this.productionMode ) {
+            if ( !this.outputModule ) throw new Error("outputModule is required");
+
+        // development mode validation
+        } else {
+            if ( !this.outputModule && !this.outputModules?.length ) throw new Error("outputModule or outputModules is required");
+        }
 
         // Setup Substream
         const stream = this.client.blocks(Request.create({
@@ -125,6 +138,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             this.emit("block", block);
     
             for ( const output of block.outputs ) {
+                console.log(output);
                 if ( output.data.oneofKind == "mapOutput" ) {
                     const { value } = output.data.mapOutput;
                     if ( !value.length ) continue;
