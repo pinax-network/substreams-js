@@ -26,24 +26,9 @@ yarn add substreams
 - [Buf - Protocol Buffers](https://buf.build/)
 - [Firehose V2](https://eos.firehose.eosnation.io)
 
-### Firsehose V2
+## Endpoints
 
-| Chain       | Host     |
-|-------------|----------|
-| EOS         | `eos.firehose.eosnation.io:9001`
-| WAX         | `wax.firehose.eosnation.io:9001`
-| Ore         | `ore.firehose.eosnation.io:9001`
-| Telos       | `telos.firehose.eosnation.io:9001`
-
-### Firsehose V2 (Testnets)
-
-| Chain         | Host     |
-|---------------|----------|
-| WAX Testnet   | `waxtest.firehose.eosnation.io:9001`
-| Jungle 4      | `jungle4.firehose.eosnation.io:9001`
-| Kylin         | `kylin.firehose.eosnation.io:9001`
-| Ore Stage     | `orestage.firehose.eosnation.io:9001`
-| Telos Testnet | `telostest.firehose.eosnation.io:9001`
+- https://github.com/pinax-network/endpoints
 
 ## Quickstart
 
