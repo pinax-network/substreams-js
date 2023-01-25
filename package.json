@@ -2,20 +2,20 @@
   "name": "substreams",
   "description": "Substreams Javascript consumer",
   "version": "0.2.0",
-  "homepage": "https://github.com/EOS-Nation/substreams-js",
+  "homepage": "https://github.com/pinax-network/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "runkitExampleFilename": "example.js",
-  "license": "Apache-2.0 license",
+  "license": "MIT OR Apache-2.0",
   "files": [
     "dist",
     "example.js"
   ],
-  "author": "Denis Carriere <@DenisCarriere>",
+  "author": "Denis <denis@pinax.network>",
   "contributors": [
-    "Denis Carriere <@DenisCarriere>",
-    "Frederik Schöll <@fschoell>",
-    "Yaro <@YaroShkvorets>"
+    "Denis <denis@pinax.network>",
+    "Fred <fred@pinax.network>",
+    "Yaro <yaro@pinax.network>"
   ],
   "scripts": {
     "build": "tsc",

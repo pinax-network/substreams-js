@@ -32,7 +32,7 @@ export function getSeconds( clock?: Clock ) {
 export const isIpfs = ( str: string ) => /^Qm[1-9A-Za-z]{44}$/.test(str);
 
 export async function download( url: string ) {
-    if ( isIpfs(url) ) url = `https://eos.mypinata.cloud/ipfs/${url}`;
+    if ( isIpfs(url) ) url = `https://ipfs.pinax.network/ipfs/${url}`;
     const binary = await downloadBuffer(url);
     const { modules } = Package.fromBinary(binary);
     const registry = createRegistryFromDescriptors(binary);

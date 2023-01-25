@@ -1,8 +1,8 @@
 # `Substreams` **Javascript** consumer
 
-[![Build Status](https://github.com/EOS-Nation/substreams-js/actions/workflows/test.yml/badge.svg)](https://github.com/EOS-Nation/substreams-js/actions/workflows/test.yml)
+[![Build Status](https://github.com/pinax-network/substreams-js/actions/workflows/test.yml/badge.svg)](https://github.com/pinax-network/substreams-js/actions/workflows/test.yml)
 [![npm version](https://badge.fury.io/js/substreams.svg)](https://badge.fury.io/js/substreams)
-![License](https://img.shields.io/github/license/EOS-Nation/substreams-js)
+![License](https://img.shields.io/github/license/pinax-network/substreams-js)
 [![Try substreams on RunKit](https://badge.runkitcdn.com/substreams.svg)](https://npm.runkit.com/substreams)
 > `Substream` **Javascript** consumer library using [**Node.js** Event emitters](https://nodejs.dev/en/learn/the-nodejs-event-emitter/).
 
@@ -24,7 +24,6 @@ yarn add substreams
 
 - [Node.js (LTS or Current)](https://nodejs.org/en/)
 - [Buf - Protocol Buffers](https://buf.build/)
-- [Firehose V2](https://eos.firehose.eosnation.io)
 
 ## Endpoints
 
@@ -36,8 +35,8 @@ yarn add substreams
 const { Substreams, download } = require("substreams");
 
 // User input
-const host = "eos.firehose.eosnation.io:9001";
-const substream = "https://eos.mypinata.cloud/ipfs/QmfE7kdRAPihhvij4ej3rUM2Sp3PcXQ9rTFCQPhPGB5dr5";
+const host = "<FIREHOSE HOST>";
+const substream = "https://ipfs.pinax.network/ipfs/QmfE7kdRAPihhvij4ej3rUM2Sp3PcXQ9rTFCQPhPGB5dr5";
 const outputModules = ["map_action_traces"];
 const startBlockNum = "283000000";
 const stopBlockNum = "283001000";
