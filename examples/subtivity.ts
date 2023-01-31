@@ -1,4 +1,4 @@
-const { Substreams, download } = require("./");
+import { Substreams, download } from "../src";
 
 // User input
 const spkg = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.1.0/subtivity-ethereum-v0.1.0.spkg";

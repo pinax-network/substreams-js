@@ -31,6 +31,13 @@ export function getSeconds( clock?: Clock ) {
 
 export const isIpfs = ( str: string ) => /^Qm[1-9A-Za-z]{44}$/.test(str);
 
+export function parseStopBlock( startBlock: string, stopBlock?: string ) {
+    if (!stopBlock) return;
+    if ( stopBlock.includes("+")) return String(Number(startBlock) + Number(stopBlock));
+    if ( stopBlock.includes("-")) throw new Error(`stopBlock cannot be negative: ${stopBlock}`);
+    return stopBlock;
+}
+
 export async function download( url: string ) {
     if ( isIpfs(url) ) url = `https://ipfs.pinax.network/ipfs/${url}`;
     const binary = await downloadBuffer(url);

@@ -20,7 +20,7 @@ export * from "./generated/sf/substreams/v1/substreams"
 export * from "./utils";
 
 // Utils
-import { parseBlockData } from './utils';
+import { parseBlockData, parseStopBlock } from './utils';
 
 interface MapOutput extends ModuleOutput {
     data: {
@@ -48,21 +48,22 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     public client: StreamClient;
 
     // configs
+    public host = "mainnet.eth.streamingfast.io:443";
     public startBlockNum?: string;
     public stopBlockNum?: string;
     public outputModule?: string;
-    public outputModules?: string[];
     public cursor?: string;
     public startCursor?: string;
     public irreversibilityCondition?: string;
     public forkSteps?: ForkStep[];
     public initialStoreSnapshotForModules?: string[];
     public debugInitialStoreSnapshotForModules?: string[];
-    public productionMode?: boolean;
+    public productionMode = false;
 
     private stopped = false;
 
-    constructor(host: string, outputModule?: string | string[], options: {
+    constructor(outputModule: string, options: {
+        host?: string,
         startBlockNum?: string,
         stopBlockNum?: string,
         authorization?: string,
@@ -74,16 +75,16 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         debugInitialStoreSnapshotForModules?: string[],
     } = {}) {
         super();
-        if ( Array.isArray(outputModule) ) this.outputModules = outputModule;
-        else this.outputModule = outputModule;
-        this.startBlockNum = options.startBlockNum;
-        this.stopBlockNum = options.stopBlockNum;
+        this.outputModule = outputModule;
+        this.startBlockNum = options.startBlockNum ?? "0";
+        this.stopBlockNum = parseStopBlock(this.startBlockNum, options.stopBlockNum);
         this.startCursor = options.startCursor;
         this.irreversibilityCondition = options.irreversibilityCondition;
         this.forkSteps = options.forkSteps;
         this.initialStoreSnapshotForModules = options.initialStoreSnapshotForModules;
-        this.productionMode = options.productionMode;
         this.debugInitialStoreSnapshotForModules = options.debugInitialStoreSnapshotForModules;
+        this.productionMode = options.productionMode ?? false;
+        this.host = options.host ?? "mainnet.eth.streamingfast.io:443";
 
         // Credentials
         const metadata = new Metadata();
@@ -96,7 +97,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         // Substream Client
         this.client = new StreamClient(
             new GrpcTransport({
-                host,
+                host: this.host,
                 channelCredentials: creds,
             }),
         );
@@ -115,15 +116,6 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             if ( !Number.isInteger(startBlockNum)) throw new Error("startBlockNum must be an integer");
         }
 
-        // production mode validation
-        if ( this.productionMode ) {
-            if ( !this.outputModule ) throw new Error("outputModule is required");
-
-        // development mode validation
-        } else {
-            if ( !this.outputModule && !this.outputModules?.length ) throw new Error("outputModule or outputModules is required");
-        }
-
         // Setup Substream
         const stream = this.client.blocks(Request.create({
             modules,
@@ -138,7 +130,6 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             this.emit("block", block);
     
             for ( const output of block.outputs ) {
-                console.log(output);
                 if ( output.data.oneofKind == "mapOutput" ) {
                     const { value } = output.data.mapOutput;
                     if ( !value.length ) continue;

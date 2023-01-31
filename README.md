@@ -35,32 +35,29 @@ yarn add substreams
 const { Substreams, download } = require("substreams");
 
 // User input
-const host = "<FIREHOSE HOST>";
-const substream = "https://ipfs.pinax.network/ipfs/QmfE7kdRAPihhvij4ej3rUM2Sp3PcXQ9rTFCQPhPGB5dr5";
-const outputModules = ["map_action_traces"];
-const startBlockNum = "283000000";
-const stopBlockNum = "283001000";
+const spkg = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.1.0/subtivity-ethereum-v0.1.0.spkg";
+const outputModule = "map_block_stats";
+const startBlockNum = "300000";
+const stopBlockNum = "+10";
 
 // Initialize Substreams
-const substreams = new Substreams(host, {
+const substreams = new Substreams(outputModule, {
     startBlockNum,
     stopBlockNum,
-    outputModules,
+    authorization: process.env.SUBSTREAMS_API_TOKEN
 });
 
 (async () => {
     // download Substream from IPFS
-    const {modules, registry} = await download(substream);
+    const {modules, registry} = await download(spkg);
 
     // Find Protobuf message types from registry
-    const ActionTraces = registry.findMessage("sf.antelope.type.v1.ActionTraces");
-    if ( !ActionTraces) throw new Error("Could not find ActionTraces message type");
+    const BlockStats = registry.findMessage("subtivity.v1.BlockStats");
+    if ( !BlockStats) throw new Error("Could not find BlockStats message type");
 
     substreams.on("mapOutput", output => {
-        const { actionTraces } = ActionTraces.fromBinary(output.data.mapOutput.value);
-        for ( const actionTrace of actionTraces ) {
-            console.log(actionTrace);
-        }
+        const decoded = BlockStats.fromBinary(output.data.mapOutput.value);
+        console.log(decoded);
     });
 
     // start streaming Substream

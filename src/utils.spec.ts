@@ -2,7 +2,7 @@
 
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { formatDate, isIpfs } from './utils';
+import { formatDate, isIpfs, parseStopBlock } from './utils';
 
 describe('substreams', () => {
     it("formatDate", () => {
@@ -12,6 +12,11 @@ describe('substreams', () => {
     it("isIpfs", async () => {
         assert.equal(isIpfs("QmUatvHNjq696qkB8SBz5VBytcEeTrM1VwFyy4Rt4Z43mX"), true);
         assert.equal(isIpfs("not IPFS"), false);
+    });
+
+    it("parseStopBlock", async () => {
+        assert.equal(parseStopBlock("0", "+100"), "100");
+        assert.equal(parseStopBlock("400", "+100"), "500");
     });
 });
 
