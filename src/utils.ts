@@ -46,7 +46,8 @@ export async function authentication_token(api_key: string) {
 
 export async function parseAuthorization(authorization: string ) {
     if ( authorization.includes("server_") ) {
-        return (await authentication_token(authorization)).token;
+        const { token } = await authentication_token(authorization);
+        return token;
     }
     return authorization;
 }
