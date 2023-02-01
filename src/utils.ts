@@ -29,6 +29,28 @@ export function getSeconds( clock?: Clock ) {
     return Number(clock?.timestamp?.seconds);
 }
 
+interface Token {
+    token: string;
+    expires_at: number;
+}
+
+export async function authentication_token(api_key: string) {
+    const url = 'https://auth.streamingfast.io/v1/auth/issue';
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({api_key})
+    })
+    return response.json() as Promise<Token>;
+}
+
+export async function parseAuthorization(authorization: string ) {
+    if ( authorization.includes("server_") ) {
+        return (await authentication_token(authorization)).token;
+    }
+    return authorization;
+}
+
 export const isIpfs = ( str: string ) => /^Qm[1-9A-Za-z]{44}$/.test(str);
 
 export function parseStopBlock( startBlock: string, stopBlock?: string ) {

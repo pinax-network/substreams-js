@@ -20,7 +20,7 @@ export * from "./generated/sf/substreams/v1/substreams"
 export * from "./utils";
 
 // Utils
-import { parseBlockData, parseStopBlock } from './utils';
+import { parseAuthorization, parseBlockData, parseStopBlock } from './utils';
 
 interface MapOutput extends ModuleOutput {
     data: {
@@ -88,7 +88,9 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
 
         // Credentials
         const metadata = new Metadata();
-        if ( options.authorization ) metadata.add('authorization', options.authorization);
+        if ( options.authorization ) parseAuthorization(options.authorization).then( token => {
+            metadata.add('authorization', token);
+        })
         const creds = credentials.combineChannelCredentials(
             credentials.createSsl(),
             credentials.createFromMetadataGenerator((_, callback) => callback(null, metadata)),
