@@ -5,3 +5,4 @@ node_modules
 !rollup.config.js
 !example.js
 generated
+*.log

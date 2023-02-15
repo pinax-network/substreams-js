@@ -1,7 +1,7 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "homepage": "https://github.com/pinax-network/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
@@ -32,8 +32,9 @@
     "@protobuf-ts/grpc-transport": "2.x",
     "@protobuf-ts/runtime": "2.x",
     "@protobuf-ts/runtime-rpc": "2.x",
+    "fetch-ponyfill": "*",
     "typed-emitter": "2.x",
-    "fetch-ponyfill": "*"
+    "winston": "3.x"
   },
   "devDependencies": {
     "@types/node": "*",
