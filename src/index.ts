@@ -21,6 +21,7 @@ export * from "./utils";
 
 // Utils
 import { parseAuthorization, parseBlockData, parseStopBlock } from './utils';
+import { Clock } from './generated/sf/substreams/v1/clock';
 
 interface MapOutput extends ModuleOutput {
     data: {
@@ -38,9 +39,9 @@ interface StoreDelta extends ModuleOutput {
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
-    mapOutput: (output: MapOutput) => void;
-    debugStoreDeltas: (output: StoreDelta) => void;
-    cursor: (cursor: string) => void;
+    mapOutput: (output: MapOutput, clock: Clock) => void;
+    debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
+    cursor: (cursor: string, clock: Clock) => void;
 }
 
 export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
@@ -130,21 +131,23 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             const block = parseBlockData(response);
             if ( !block ) continue;
             this.emit("block", block);
+            if ( !block.clock ) continue;
+            const clock: Clock = block.clock;
     
             for ( const output of block.outputs ) {
                 if ( output.data.oneofKind == "mapOutput" ) {
                     const { value } = output.data.mapOutput;
                     if ( !value.length ) continue;
-                    this.emit("mapOutput", output as MapOutput);
+                    this.emit("mapOutput", output as MapOutput, clock);
                 }
 
                 else if ( output.data.oneofKind == "debugStoreDeltas" ) {
                     const { deltas } = output.data.debugStoreDeltas;
                     if ( !deltas.length ) continue;
-                    this.emit("debugStoreDeltas", output as StoreDelta);
+                    this.emit("debugStoreDeltas", output as StoreDelta, clock);
                 }
             }
-            this.emit("cursor", block.cursor);
+            this.emit("cursor", block.cursor, clock);
         }
     }
 }

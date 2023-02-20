@@ -21,9 +21,9 @@ const substreams = new Substreams(outputModule, {
     const BlockStats = registry.findMessage("subtivity.v1.BlockStats");
     if ( !BlockStats) throw new Error("Could not find BlockStats message type");
 
-    substreams.on("mapOutput", output => {
+    substreams.on("mapOutput", (output, clock) => {
         const decoded = BlockStats.fromBinary(output.data.mapOutput.value);
-        console.log(decoded);
+        console.log(decoded, clock);
     });
 
     // start streaming Substream
