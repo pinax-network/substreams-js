@@ -1,8 +1,5 @@
 node_modules
-*.js
-*.d.ts
+dist
 .env
-!rollup.config.js
 !example.js
-generated
 *.log

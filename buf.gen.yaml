@@ -10,3 +10,19 @@ plugins:
       - eslint_disable
       - client_generic
       - ts_nocheck
+
+
+# version: v1
+
+# managed:
+#   enabled: true
+
+# plugins:
+#   - name: es
+#     path: ./node_modules/.bin/protoc-gen-es
+#     out: src/generated
+#     opt: target=ts
+#   - name: connect-es
+#     path: ./node_modules/.bin/protoc-gen-connect-es
+#     out: src/generated
+#     opt: target=ts

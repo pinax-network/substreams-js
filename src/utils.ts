@@ -1,11 +1,11 @@
 import makeFetch from 'fetch-ponyfill'
 import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 
 // Substream auto-generated
-import { Package } from './generated/sf/substreams/v1/package';
-import { Clock } from "./generated/sf/substreams/v1/clock";
-import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams";
+import { Package } from './generated/sf/substreams/v1/package.js';
+import { Clock } from "./generated/sf/substreams/v1/clock.js";
+import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams.js";
 
 export const fetch = makeFetch().fetch
 

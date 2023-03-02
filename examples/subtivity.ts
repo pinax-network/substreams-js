@@ -10,7 +10,7 @@ const stopBlockNum = "+10";
 const substreams = new Substreams(outputModule, {
     startBlockNum,
     stopBlockNum,
-    authorization: process.env.STREAMINGFAST_KEY // or SUBSTREAMS_API_TOKEN
+    authorization: process.env.SUBSTREAMS_API_TOKEN
 });
 
 (async () => {

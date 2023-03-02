@@ -2,26 +2,25 @@ import EventEmitter from 'node:events';
 import TypedEmitter from "typed-emitter";
 import { credentials, Metadata } from '@grpc/grpc-js';
 import { GrpcTransport } from '@protobuf-ts/grpc-transport';
+import { Any } from "@bufbuild/protobuf"
 
 // Substream generated code
 // buf generate buf.build/streamingfast/substreams:develop
-import { StreamClient } from './generated/sf/substreams/v1/substreams.client';
-import { Modules } from './generated/sf/substreams/v1/modules';
-import { BlockScopedData, ForkStep, Request, ModuleOutput } from './generated/sf/substreams/v1/substreams';
-import { StoreDeltas } from "./generated/sf/substreams/v1/substreams";
-import { Any } from "@bufbuild/protobuf"
+import { StreamClient } from './generated/sf/substreams/v1/substreams.client.js';
+import { Modules } from './generated/sf/substreams/v1/modules.js';
+import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams.js';
 
 // Export utils & Typescript interfaces
-export * from "./generated/sf/substreams/v1/clock"
-export * from "./generated/sf/substreams/v1/modules"
-export * from "./generated/sf/substreams/v1/package"
-export * from "./generated/sf/substreams/v1/substreams.client"
-export * from "./generated/sf/substreams/v1/substreams"
+export * from "./generated/sf/substreams/v1/clock.js";
+export * from "./generated/sf/substreams/v1/modules.js";
+export * from "./generated/sf/substreams/v1/package.js";
+export * from "./generated/sf/substreams/v1/substreams.client.js";
+export * from "./generated/sf/substreams/v1/substreams.js";
 export * from "./utils";
 
 // Utils
 import { parseAuthorization, parseBlockData, parseStopBlock } from './utils';
-import { Clock } from './generated/sf/substreams/v1/clock';
+import { Clock } from './generated/sf/substreams/v1/clock.js';
 
 interface MapOutput extends ModuleOutput {
     data: {
@@ -39,9 +38,12 @@ interface StoreDelta extends ModuleOutput {
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
+    clock: (clock: Clock) => void;
     mapOutput: (output: MapOutput, clock: Clock) => void;
     debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
     cursor: (cursor: string, clock: Clock) => void;
+    start: (cursor: string, clock: Clock) => void;
+    end: (cursor: string, clock: Clock) => void;
 }
 
 export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
@@ -126,13 +128,17 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         }));
     
         // Send Substream Data to Adapter
+        let last_cursor: string = '';
+        let last_clock = {} as Clock;
         for await (const response of stream.responses) {
             if ( this.stopped ) break;
             const block = parseBlockData(response);
             if ( !block ) continue;
-            this.emit("block", block);
             if ( !block.clock ) continue;
             const clock: Clock = block.clock;
+            if ( !last_cursor ) this.emit("start", block.cursor, clock);
+            this.emit("block", block);
+            this.emit("clock", clock);
     
             for ( const output of block.outputs ) {
                 if ( output.data.oneofKind == "mapOutput" ) {
@@ -148,6 +154,9 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                 }
             }
             this.emit("cursor", block.cursor, clock);
+            last_cursor = block.cursor;
+            last_clock = clock;
         }
+        this.emit("end", last_cursor, last_clock);
     }
 }

@@ -43,16 +43,25 @@ export interface Request {
      */
     irreversibilityCondition: string;
     /**
-     * By default, the engine runs in developer mode, with richer and deeper output,
-     * * support for multiple `output_modules`, of `store` and `map` kinds
-     * * support for `initial_store_snapshot_for_modules`
-     * * log outputs for output modules
+     * Substreams has two mode when executing your module(s) either development mode or production
+     * mode. Development and production modes impact the execution of Substreams, important aspects
+     * of execution include:
+     * * The time required to reach the first byte.
+     * * The speed that large ranges get executed.
+     * * The module logs and outputs sent back to the client.
      *
-     * With `production_mode`, however, you trade off functionality for high speed, where it:
-     * * restricts the possible requested `output_modules` to a single mapper module,
-     * * turns off support for `initial_store_snapshot_for_modules`,
-     * * still streams output linearly, with a cursor, but at higher speeds
-     * * and purges log outputs from responses.
+     * By default, the engine runs in developer mode, with richer and deeper output. Differences
+     * between production and development modes include:
+     * * Forward parallel execution is enabled in production mode and disabled in development mode
+     * * The time required to reach the first byte in development mode is faster than in production mode.
+     *
+     * Specific attributes of development mode include:
+     * * The client will receive all of the executed module's logs.
+     * * It's possible to request specific store snapshots in the execution tree (via `debug_initial_store_snapshot_for_modules`).
+     * * Multiple module's output is possible.
+     *
+     * With production mode`, however, you trade off functionality for high speed enabling forward
+     * parallel execution of module ahead of time.
      *
      * @generated from protobuf field: bool production_mode = 9;
      */
@@ -180,6 +189,12 @@ export interface BlockScopedData {
      * @generated from protobuf field: string cursor = 10;
      */
     cursor: string;
+    /**
+     * Potentially non-deterministic. Reserved for future use.
+     *
+     * @generated from protobuf field: uint64 final_block_height = 11;
+     */
+    finalBlockHeight: string;
 }
 /**
  * @generated from protobuf message sf.substreams.v1.ModuleOutput
@@ -844,11 +859,12 @@ class BlockScopedData$Type extends MessageType<BlockScopedData> {
             { no: 1, name: "outputs", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => ModuleOutput },
             { no: 3, name: "clock", kind: "message", T: () => Clock },
             { no: 6, name: "step", kind: "enum", T: () => ["sf.substreams.v1.ForkStep", ForkStep] },
-            { no: 10, name: "cursor", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 10, name: "cursor", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 11, name: "final_block_height", kind: "scalar", T: 4 /*ScalarType.UINT64*/ }
         ]);
     }
     create(value?: PartialMessage<BlockScopedData>): BlockScopedData {
-        const message = { outputs: [], step: 0, cursor: "" };
+        const message = { outputs: [], step: 0, cursor: "", finalBlockHeight: "0" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<BlockScopedData>(this, message, value);
@@ -870,6 +886,9 @@ class BlockScopedData$Type extends MessageType<BlockScopedData> {
                     break;
                 case /* string cursor */ 10:
                     message.cursor = reader.string();
+                    break;
+                case /* uint64 final_block_height */ 11:
+                    message.finalBlockHeight = reader.uint64().toString();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -895,6 +914,9 @@ class BlockScopedData$Type extends MessageType<BlockScopedData> {
         /* string cursor = 10; */
         if (message.cursor !== "")
             writer.tag(10, WireType.LengthDelimited).string(message.cursor);
+        /* uint64 final_block_height = 11; */
+        if (message.finalBlockHeight !== "0")
+            writer.tag(11, WireType.Varint).uint64(message.finalBlockHeight);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

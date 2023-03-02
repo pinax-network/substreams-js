@@ -55,17 +55,24 @@ const substreams = new Substreams(outputModule, {
     const BlockStats = registry.findMessage("subtivity.v1.BlockStats");
     if ( !BlockStats) throw new Error("Could not find BlockStats message type");
 
+    // first block received
+    substreams.on("start", (cursor, clock) => {
+        console.log({status: "start", cursor, clock});
+    });
+
+    // on every map output received
     substreams.on("mapOutput", (output, clock) => {
         const decoded = BlockStats.fromBinary(output.data.mapOutput.value);
-        console.log(decoded, clock);
+        console.log({decoded, clock});
+    });
+
+    // end of stream
+    substreams.on("end", (cursor, clock) => {
+        console.log({status: "end", cursor, clock});
     });
 
     // start streaming Substream
-    await substreams.start(modules);
-
-    // end of Substream
-    console.log("done");
-    process.exit();
+    substreams.start(modules);
 })();
 ```
 

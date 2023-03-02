@@ -1,8 +1,9 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "homepage": "https://github.com/pinax-network/substreams-js",
+  "sideEffects": false,
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "runkitExampleFilename": "example.js",
@@ -11,34 +12,41 @@
     "dist",
     "example.js"
   ],
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js"
+  },
   "author": "Denis <denis@pinax.network>",
   "contributors": [
     "Denis <denis@pinax.network>",
     "Fred <fred@pinax.network>",
-    "Yaro <yaro@pinax.network>"
+    "Yaro <yaro@pinax.network>",
+    "Etienne <etienne.d@pinax.network>"
   ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run test && npm run build",
-    "codegen": "buf generate buf.build/streamingfast/substreams:develop",
-    "test": "ts-node **/*.spec.ts"
+    "codegen": "buf generate buf.build/streamingfast/substreams:develop && buf generate proto",
+    "test": "tsx **/*.spec.ts"
   },
   "engines": {
     "node": ">=16"
   },
   "dependencies": {
+    "@bufbuild/connect": "0.8.x",
     "@bufbuild/protobuf": "1.x",
-    "@grpc/grpc-js": "1.x",
-    "@protobuf-ts/grpc-transport": "2.x",
-    "@protobuf-ts/runtime": "2.x",
-    "@protobuf-ts/runtime-rpc": "2.x",
+    "@grpc/grpc-js": "^1.8.11",
+    "@protobuf-ts/grpc-transport": "^2.8.2",
     "fetch-ponyfill": "*",
     "typed-emitter": "2.x",
     "winston": "3.x"
   },
   "devDependencies": {
-    "@types/node": "*",
-    "ts-node": "*",
+    "@bufbuild/buf": "1.x",
+    "@bufbuild/protoc-gen-connect-es": "0.8.x",
+    "@bufbuild/protoc-gen-es": "1.x",
+    "@types/node": "18.x",
+    "tsx": "3.x",
     "typescript": "*"
   }
 }
