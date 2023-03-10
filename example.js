@@ -1,7 +1,7 @@
 const { Substreams, download } = require("./");
 
 // User input
-const spkg = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.1.0/subtivity-ethereum-v0.1.0.spkg";
+const spkg = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.2.0/subtivity-ethereum-v0.2.0.spkg";
 const outputModule = "map_block_stats";
 const startBlockNum = "300000";
 const stopBlockNum = "+10";
