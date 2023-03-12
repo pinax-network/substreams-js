@@ -17,7 +17,8 @@
     "Denis <denis@pinax.network>",
     "Fred <fred@pinax.network>",
     "Yaro <yaro@pinax.network>",
-    "Etienne <etienne.d@pinax.network>"
+    "Etienne <etienne.d@pinax.network>",
+    "Sebastian <@fubhy>"
   ],
   "scripts": {
     "build": "tsc",
