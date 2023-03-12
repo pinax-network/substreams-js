@@ -1,35 +1,28 @@
-import { Substreams, download } from "../src";
+import fs from "fs";
+import { Substreams } from "../src";
 
 // User input
-const spkg = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.2.0/subtivity-ethereum-v0.2.0.spkg";
+const spkg = fs.readFileSync("subtivity-ethereum.spkg");
 const outputModule = "map_block_stats";
 const startBlockNum = "300000";
-const stopBlockNum = "+10";
-
-// Initialize Substreams
-const substreams = new Substreams(outputModule, {
-    startBlockNum,
-    stopBlockNum,
-    authorization: process.env.SUBSTREAMS_API_TOKEN
-});
+const stopBlockNum = "+1000";
+const host = 'https://mainnet.eth.streamingfast.io:443';
+const authorization = process.env.SUBSTREAMS_API_TOKEN;
 
 (async () => {
-    // download Substream from IPFS
-    const {modules, registry} = await download(spkg);
-
-    // Find Protobuf message types from registry
-    const BlockStats = registry.findMessage("subtivity.v1.BlockStats");
-    if ( !BlockStats) throw new Error("Could not find BlockStats message type");
-
-    substreams.on("mapOutput", output => {
-        const decoded = BlockStats.fromBinary(output.data.mapOutput.value);
-        console.log(decoded);
+    const substreams = new Substreams(spkg, outputModule, {
+        host,
+        startBlockNum,
+        stopBlockNum,
+        authorization,
+        productionMode: true,
     });
-
-    // start streaming Substream
-    await substreams.start(modules);
-
-    // end of Substream
-    console.log("done");
-    process.exit();
+    
+    substreams.on("start", (cursor, clock) => {
+        console.log({status: "start", cursor, clock});
+    });
+    substreams.on("mapOutput", (mapOutput, clock) => {
+        console.log({mapOutput, clock});
+    });
+    substreams.start();
 })();
