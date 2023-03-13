@@ -3,7 +3,7 @@ import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
 // Substream auto-generated
 import { Package } from './generated/sf/substreams/v1/package_pb.js';
 import { Clock } from "./generated/sf/substreams/v1/clock_pb.js";
-import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams_pb";
+import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams_pb.js";
 
 export function formatDate( seconds: number ) {
     return new Date(seconds * 1000).toISOString().replace(".000Z", "")

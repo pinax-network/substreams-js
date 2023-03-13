@@ -10,7 +10,7 @@ import { Any } from "@bufbuild/protobuf"
 // buf generate buf.build/streamingfast/substreams:develop
 import { Stream } from './generated/sf/substreams/v1/substreams_connect.js';
 import { Modules } from './generated/sf/substreams/v1/modules_pb.js';
-import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams_pb';
+import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams_pb.js';
 
 // Export utils & Typescript interfaces
 export * from "./generated/sf/substreams/v1/clock_pb.js";
@@ -18,11 +18,11 @@ export * from "./generated/sf/substreams/v1/modules_pb.js";
 export * from "./generated/sf/substreams/v1/package_pb.js";
 export * from "./generated/sf/substreams/v1/substreams_pb.js";
 export * from "./generated/sf/substreams/v1/substreams_connect.js";
-export * from "./utils";
-export * from "./authorization";
+export * from "./utils.js";
+export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode } from './utils';
+import { parseBlockData, parseStopBlock, unpack, isNode } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 
 // types

@@ -3,13 +3,18 @@
   "description": "Substreams Javascript consumer",
   "version": "0.4.0",
   "homepage": "https://github.com/pinax-network/substreams-js",
+  "main": "lib/substreams.js",
+  "module": "lib/substreams.m.js",
+  "types": "lib/substreams.d.ts",
+  "browser": {
+    "events": false
+  },
   "sideEffects": false,
-  "main": "dist/index.js",
-  "types": "dist/index.d.js",
   "runkitExampleFilename": "example.js",
   "license": "MIT OR Apache-2.0",
   "files": [
-    "dist",
+    "lib/*",
+    "src/*",
     "example.js"
   ],
   "author": "Denis <denis@pinax.network>",
@@ -21,26 +26,28 @@
     "Sebastian <@fubhy>"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c rollup.config.mjs",
+    "test": "tsx --test **/*.spec.ts",
     "prepublishOnly": "npm run test && npm run build",
-    "codegen": "buf generate buf.build/streamingfast/substreams:develop && buf generate proto",
-    "test": "tsx --test **/*.spec.ts"
+    "codegen": "buf generate buf.build/streamingfast/substreams:develop && buf generate proto"
   },
   "engines": {
     "node": ">=16"
   },
   "dependencies": {
     "@bufbuild/connect": "0.8.x",
-    "@bufbuild/protobuf": "1.x",
     "@bufbuild/connect-node": "0.8.x",
     "@bufbuild/connect-web": "0.8.x",
+    "@bufbuild/protobuf": "1.x",
     "typed-emitter": "2.x"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.x",
     "@bufbuild/protoc-gen-connect-es": "0.8.x",
     "@bufbuild/protoc-gen-es": "1.x",
+    "@rollup/plugin-typescript": "11.x",
     "@types/node": "18.x",
+    "rollup-plugin-dts": "5.x",
     "tsx": "3.x",
     "typescript": "*"
   }

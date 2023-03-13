@@ -4,3 +4,4 @@ dist
 !example.js
 *.log
 .DS_Store
+lib
