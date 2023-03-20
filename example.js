@@ -38,6 +38,11 @@ const stopBlockNum = "+10";
         console.log({status: "end", cursor, clock});
     });
 
+    // head block time drift
+    substreams.on("head_block_time_drift", (seconds) => {
+        console.log({head_block_time_drift: seconds});
+    });
+
     // start streaming Substream
     substreams.start();
 })();

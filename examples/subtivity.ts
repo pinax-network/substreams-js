@@ -17,7 +17,6 @@ const authorization = process.env.SUBSTREAMS_API_TOKEN;
         authorization,
         productionMode: true,
     });
-    
     substreams.on("start", (cursor, clock) => {
         console.log({status: "start", cursor, clock});
     });

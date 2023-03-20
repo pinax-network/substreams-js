@@ -18,6 +18,12 @@ export function getSeconds( clock?: Clock ) {
     return Number(clock?.timestamp?.seconds);
 }
 
+export function calculateHeadBlockTimeDrift(clock?: Clock) {
+    const seconds = getSeconds(clock);
+    const current = Math.floor(new Date().valueOf() / 1000);
+    return current - seconds;
+}
+
 export function parseStopBlock( startBlock: string, stopBlock?: string ) {
     if (!stopBlock) return;
     if ( stopBlock.includes("+")) return String(Number(startBlock) + Number(stopBlock));

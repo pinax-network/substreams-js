@@ -22,7 +22,7 @@ export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode } from './utils.js';
+import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 
 // types
@@ -46,6 +46,7 @@ export interface StoreDelta extends ModuleOutput {
 
 export const DEFAULT_HOST = "https://mainnet.eth.streamingfast.io:443";
 export const DEFAULT_AUTH = "https://auth.streamingfast.io/v1/auth/issue";
+export const DEFAULT_IPFS = "https://ipfs.io/ipfs/";
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
@@ -55,6 +56,7 @@ type MessageEvents = {
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
     end: (cursor: string, clock: Clock) => void;
+    head_block_time_drift: (seconds: number, clock: Clock) => void;
 }
 
 export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
@@ -174,6 +176,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             if ( !last_cursor ) this.emit("start", block.cursor, clock);
             this.emit("block", block);
             this.emit("clock", clock);
+            this.emit("head_block_time_drift", calculateHeadBlockTimeDrift(clock), clock);
     
             for ( const output of block.outputs ) {
                 if ( output.data.case === "mapOutput" ) {
