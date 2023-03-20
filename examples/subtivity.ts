@@ -1,15 +1,15 @@
-import fs from "fs";
-import { Substreams } from "../src";
+import { Substreams, download } from "../src";
 
 // User input
-const spkg = fs.readFileSync("subtivity-ethereum.spkg");
+const url = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.2.0/subtivity-ethereum-v0.2.0.spkg";
 const outputModule = "map_block_stats";
 const startBlockNum = "300000";
-const stopBlockNum = "+1000";
+const stopBlockNum = "+10";
 const host = 'https://mainnet.eth.streamingfast.io:443';
 const authorization = process.env.SUBSTREAMS_API_TOKEN;
 
 (async () => {
+    const spkg = await download(url);
     const substreams = new Substreams(spkg, outputModule, {
         host,
         startBlockNum,

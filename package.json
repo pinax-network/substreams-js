@@ -1,11 +1,10 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/pinax-network/substreams-js",
-  "main": "lib/substreams.js",
-  "module": "lib/substreams.m.js",
-  "types": "lib/substreams.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "browser": {
     "events": false
   },
@@ -13,8 +12,7 @@
   "runkitExampleFilename": "example.js",
   "license": "MIT OR Apache-2.0",
   "files": [
-    "lib/*",
-    "src/*",
+    "dist/*",
     "example.js"
   ],
   "author": "Denis <denis@pinax.network>",
@@ -26,7 +24,7 @@
     "Sebastian <@fubhy>"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
+    "build": "tsup src/index.ts --dts",
     "test": "tsx --test **/*.spec.ts",
     "prepublishOnly": "npm run test && npm run build",
     "codegen": "buf generate buf.build/streamingfast/substreams:develop && buf generate proto"
@@ -45,10 +43,9 @@
     "@bufbuild/buf": "1.x",
     "@bufbuild/protoc-gen-connect-es": "0.8.x",
     "@bufbuild/protoc-gen-es": "1.x",
-    "@rollup/plugin-typescript": "11.x",
     "@types/node": "18.x",
-    "rollup-plugin-dts": "5.x",
+    "tsup": "6.x",
     "tsx": "3.x",
-    "typescript": "*"
+    "typescript": "4.x"
   }
 }
