@@ -1,8 +1,8 @@
-import { Substreams, download } from "../src";
+import { Substreams, download, PrometheusOperations } from "../src";
 
 // User input
-const url = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.2.0/subtivity-ethereum-v0.2.0.spkg";
-const outputModule = "map_block_stats";
+const url = "QmcswTuvTaDAwLVXYMC3g9TPXTDcWmhUDHpUd9cK8mdgs3";
+const outputModule = "prom_out";
 const startBlockNum = "300000";
 const stopBlockNum = "+10";
 const host = 'https://mainnet.eth.streamingfast.io:443';
@@ -20,8 +20,12 @@ const authorization = process.env.SUBSTREAMS_API_TOKEN;
     substreams.on("start", (cursor, clock) => {
         console.log({status: "start", cursor, clock});
     });
-    substreams.on("anyMessage", (message, clock) => {
-        console.log({message, clock});
+
+    substreams.on("anyMessage", (message: PrometheusOperations) => {
+        for ( const operation of message.operations ) {
+            console.log(operation.toJson());
+        }
     });
+
     substreams.start();
 })();

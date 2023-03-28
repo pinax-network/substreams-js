@@ -1,7 +1,7 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "homepage": "https://github.com/pinax-network/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

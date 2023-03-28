@@ -4,8 +4,7 @@ import { CallOptions, createPromiseClient, Transport } from "@bufbuild/connect";
 import { createGrpcTransport } from "@bufbuild/connect-node";
 import { createConnectTransport } from "@bufbuild/connect-web";
 
-import { Any, AnyMessage } from "@bufbuild/protobuf"
-export { Any, AnyMessage };
+import { Any } from "@bufbuild/protobuf"
 
 // Substream generated code
 // buf generate buf.build/streamingfast/substreams:develop
@@ -62,7 +61,7 @@ type MessageEvents = {
     block: (block: BlockScopedData) => void;
     clock: (clock: Clock) => void;
     mapOutput: (output: MapOutput, clock: Clock) => void;
-    anyMessage: (message: AnyMessage, clock: Clock) => void;
+    anyMessage: (message: any, clock: Clock) => void;
     debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
