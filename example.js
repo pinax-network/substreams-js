@@ -1,9 +1,9 @@
-const { Substreams, download, unpack } = require("./");
+const { Substreams, download } = require("./");
 
 // User parameters
-const url = "https://github.com/pinax-network/subtivity-substreams/releases/download/v0.2.0/subtivity-ethereum-v0.2.0.spkg";
-const outputModule = "map_block_stats";
-const startBlockNum = "300000";
+const url = "https://github.com/streamingfast/substreams-ethereum-quickstart/releases/download/1.0.0/substreams-ethereum-quickstart-v1.0.0.spkg";
+const outputModule = "map_block";
+const startBlockNum = "12292922";
 const stopBlockNum = "+10";
 
 (async () => {
@@ -16,31 +16,20 @@ const stopBlockNum = "+10";
         stopBlockNum,
         authorization: process.env.SUBSTREAMS_API_TOKEN
     });
-    
-    // Find Protobuf message types from registry
-    const { registry } = unpack(spkg);
-    const BlockStats = registry.findMessage("subtivity.v1.BlockStats");
-    if ( !BlockStats) throw new Error("Could not find BlockStats message type");
 
     // first block received
     substreams.on("start", (cursor, clock) => {
         console.log({status: "start", cursor, clock});
     });
 
-    // on every map output received
-    substreams.on("mapOutput", (output, clock) => {
-        const decoded = BlockStats.fromBinary(output.data.value.value);
-        console.log({decoded, clock});
+    // stream of decoded MapOutputs
+    substreams.on("anyMessage", (message) => {
+        console.log({message});
     });
 
     // end of stream
     substreams.on("end", (cursor, clock) => {
         console.log({status: "end", cursor, clock});
-    });
-
-    // head block time drift
-    substreams.on("head_block_time_drift", (seconds) => {
-        console.log({head_block_time_drift: seconds});
     });
 
     // start streaming Substream

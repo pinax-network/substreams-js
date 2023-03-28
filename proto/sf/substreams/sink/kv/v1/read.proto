@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package sf.substreams.sink.kv.v1;
+
+option go_package = "github.com/streamingfast/substreams-sink-kv/pb;pbkv";
+
+service Kv {
+
+  // Get returns the requested value as bytes if it exists, grpc_error: NOT_FOUND otherwise.
+  rpc Get(GetRequest) returns (GetResponse);
+
+  // GetMany returns the requested values as bytes if all of them exists, grpc_error: NOT_FOUND otherwise.
+  rpc GetMany(GetManyRequest) returns (GetManyResponse);
+
+  // GetByPrefix returns the next _limit_ key/value pair that match the requested prefix if any exist, grpc_error: NOT_FOUND otherwise.
+  rpc GetByPrefix(GetByPrefixRequest) returns (GetByPrefixResponse);
+
+  // Scan returns then next _limit_ key/value pairs starting lexicographically at the given key, grpc_error: NOT_FOUND otherwise.
+  rpc Scan(ScanRequest) returns (ScanResponse);
+
+}
+
+message GetRequest {
+
+  // Key to fetch
+  string key = 1;
+}
+
+
+message GetManyRequest {
+
+  // Keys to fetch
+  repeated string keys = 1;
+}
+
+message GetByPrefixRequest {
+
+  // server may impose a hard limit, trying to go above it would return grpc_error: INVALID_ARGUMENT
+  uint64 limit = 1;
+
+  // requested prefix
+  string prefix = 2;
+}
+
+message ScanRequest {
+
+  // server may impose a hard limit, trying to go above it would return grpc_error: INVALID_ARGUMENT
+  uint64 limit = 1;
+
+  // scanning will start at this point, lexicographically
+  string begin = 2;
+
+  // If set, scanning will stop when it reaches this point or above, excluding this exact key
+  optional string exclusive_end = 3;
+}
+
+
+message GetResponse {
+
+  // Value that was found for the requested key
+  bytes value = 1;
+}
+
+
+message GetManyResponse {
+
+  // Values that were found for the requested keys
+  repeated bytes values = 1;
+}
+
+message GetByPrefixResponse {
+
+  // KV are the key/value pairs that were found with the given prefix
+  repeated KV key_values = 1;
+
+  // limit_reached is true if there is at least ONE MORE result than the requested limit
+  bool limit_reached = 2;
+}
+
+message ScanResponse {
+
+  // KV are the key/value pairs that were found during scan
+  repeated KV key_values = 1;
+
+  // limit_reached is true if there is at least ONE MORE result than the requested limit
+  bool limit_reached = 2;
+}
+
+
+
+message KV {
+    string key = 1;
+    bytes value = 2;
+}

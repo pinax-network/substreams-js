@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package pinax.substreams.sink.prometheus.v1;
+
+// Vector of Prometheus metrics
+message PrometheusOperations {
+  repeated PrometheusOperation operations = 1;
+}
+
+message PrometheusOperation {
+  string name = 1;                // Name of the Prometheus metric
+  map<string, string> labels = 2; // Labels represents a collection of label name -> value mappings. 
+  oneof operation {
+    GaugeOp gauge = 3;
+    CounterOp counter = 4;
+    HistogramOp histogram = 5;
+    SummaryOp summary = 6;
+  }
+}
+
+message GaugeOp {
+  enum Operation {
+    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    OPERATION_UNSPECIFIED = 0;
+    // Inc increments the Gauge by 1. Use Add to increment it by arbitrary values.
+    OPERATION_INC = 1;
+    // Add adds the given value to the Gauge. (The value can be negative, resulting in a decrease of the Gauge.)
+    OPERATION_ADD = 2; // float
+    // Set sets the Gauge to an arbitrary value. 
+    OPERATION_SET = 3; // float
+    // Dec decrements the Gauge by 1. Use Sub to decrement it by arbitrary values.
+    OPERATION_DEC = 4;
+    // Sub subtracts the given value from the Gauge. (The value can be negative, resulting in an increase of the Gauge.)
+    OPERATION_SUB = 5; // float
+    // SetToCurrentTime sets the Gauge to the current Unix time in seconds.
+    OPERATION_SET_TO_CURRENT_TIME = 6;
+    // Remove metrics for the given label values
+    OPERATION_REMOVE = 7;
+    // Reset gauge values
+    OPERATION_RESET = 8;
+  }
+  Operation operation = 1;
+  double value = 2;               // Value (Float) to be used in the operation
+}
+
+message CounterOp {
+  enum Operation {
+    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    OPERATION_UNSPECIFIED = 0;
+    // Increments the Counter by 1.
+    OPERATION_INC = 1;
+    // Adds an arbitrary value to a Counter. (Returns an error if the value is < 0.)
+    OPERATION_ADD = 2; // float
+    // Remove metrics for the given label values
+    OPERATION_REMOVE = 7;
+    // Reset counter values
+    OPERATION_RESET = 8;
+  }
+  Operation operation = 1;
+  double value = 2;               // Value (Float) to be used in the operation
+}
+
+message SummaryOp {
+  enum Operation {
+    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    OPERATION_UNSPECIFIED = 0;
+    // Observe adds a single observation to the summary.
+    // Observations are usually positive or zero.
+    // Negative observations are accepted but prevent current versions of Prometheus from properly detecting counter resets in the sum of observations
+    OPERATION_OBSERVE = 1;
+    // Start a timer. Calling the returned function will observe the duration in seconds in the summary.
+    OPERATION_START_TIMER = 2;
+    // Remove metrics for the given label values
+    OPERATION_REMOVE = 7;
+    // Reset counter values
+    OPERATION_RESET = 8;
+  }
+  Operation operation = 1;
+  double value = 2;               // Value (Float) to be used in the operation
+}
+
+message HistogramOp {
+  enum Operation {
+    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    OPERATION_UNSPECIFIED = 0;
+    // Observe adds a single observation to the histogram.
+    // Observations are usually positive or zero.
+    // Negative observations are accepted but prevent current versions of Prometheus from properly detecting counter resets in the sum of observations. 
+    OPERATION_OBSERVE = 1;
+    // Start a timer. Calling the returned function will observe the duration in seconds in the summary.
+    OPERATION_START_TIMER = 2;
+    // Initialize the metrics for the given combination of labels to zero
+    OPERATION_ZERO = 3;
+    // Remove metrics for the given label values
+    OPERATION_REMOVE = 7;
+    // Reset counter values
+    OPERATION_RESET = 8;
+  }
+  Operation operation = 1;
+  double value = 2;               // Value (Float) to be used in the operation
+}

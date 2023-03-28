@@ -1,9 +1,11 @@
 import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
+import * as ipfs from './ipfs.js';
 
 // Substream auto-generated
 import { Package } from './generated/sf/substreams/v1/package_pb.js';
 import { Clock } from "./generated/sf/substreams/v1/clock_pb.js";
-import { BlockScopedData, Response } from "./generated/sf/substreams/v1/substreams_pb.js";
+import { BlockScopedData, ModuleOutput, Response } from "./generated/sf/substreams/v1/substreams_pb.js";
+import { Registry } from "./index.js";
 
 export function formatDate( seconds: number ) {
     return new Date(seconds * 1000).toISOString().replace(".000Z", "")
@@ -39,6 +41,7 @@ export function unpack( binary: Uint8Array ) {
 }
 
 export async function download(url: string) {
+    if ( ipfs.test(url) ) url = ipfs.url(url);
     const response = await fetch(url);
     if (!response.ok) throw new Error(`unexpected response ${response.statusText}`)
     const blob = await response.blob();
@@ -54,4 +57,20 @@ export function isNode() {
     return typeof process !== "undefined" &&
         process.versions != null &&
         process.versions.node != null
+}
+
+export function timeout(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export function decode(output: ModuleOutput, registry: Registry) {
+    if ( !output.data.value ) return null;
+    if ( output.data.case === "mapOutput" ) {
+        const { value, typeUrl } = output.data.value;
+        const typeName = typeUrl.replace("type.googleapis.com/", "")
+        const message = registry.findMessage(typeName);
+        if ( !message ) return null;
+        return message.fromBinary(value);
+    }
+    return null;
 }

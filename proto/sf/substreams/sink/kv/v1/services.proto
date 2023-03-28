@@ -1,0 +1,26 @@
+syntax = "proto3";
+package sf.substreams.sink.kv.v1;
+
+option go_package = "github.com/streamingfast/substreams-sink-kv/pb;pbkv";
+
+
+message Config {
+  int64 start_block = 1;
+  string input_module = 2;
+}
+
+// This defines a KV Sink to be queried with a generic key access interface (Get, GetMany, Scan, Prefix calls).
+message GenericService {
+  Config sink_config = 1;
+}
+
+// This defines configuration to run a WASM query service on top of the KV store being sync'd.
+message WASMQueryService  {
+  Config sink_config = 1;
+
+  // wasm exports: "kv_get_batch", "kv_get", "kv_scan", "kv_prefix"
+  bytes wasm_query_module = 5;
+
+  // Fully qualified Protobuf Service definition name
+  string grpc_service = 2; // sf.mycustom.v1.MyService
+}

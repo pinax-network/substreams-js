@@ -20,8 +20,8 @@ const authorization = process.env.SUBSTREAMS_API_TOKEN;
     substreams.on("start", (cursor, clock) => {
         console.log({status: "start", cursor, clock});
     });
-    substreams.on("mapOutput", (mapOutput, clock) => {
-        console.log({mapOutput, clock});
+    substreams.on("anyMessage", (message, clock) => {
+        console.log({message, clock});
     });
     substreams.start();
 })();

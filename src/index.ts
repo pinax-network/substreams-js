@@ -4,7 +4,8 @@ import { CallOptions, createPromiseClient, Transport } from "@bufbuild/connect";
 import { createGrpcTransport } from "@bufbuild/connect-node";
 import { createConnectTransport } from "@bufbuild/connect-web";
 
-import { Any } from "@bufbuild/protobuf"
+import { Any, AnyMessage } from "@bufbuild/protobuf"
+export { Any, AnyMessage };
 
 // Substream generated code
 // buf generate buf.build/streamingfast/substreams:develop
@@ -12,17 +13,26 @@ import { Stream } from './generated/sf/substreams/v1/substreams_connect.js';
 import { Modules } from './generated/sf/substreams/v1/modules_pb.js';
 import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams_pb.js';
 
-// Export utils & Typescript interfaces
+// Export generated substreams protobufs
 export * from "./generated/sf/substreams/v1/clock_pb.js";
 export * from "./generated/sf/substreams/v1/modules_pb.js";
 export * from "./generated/sf/substreams/v1/package_pb.js";
 export * from "./generated/sf/substreams/v1/substreams_pb.js";
 export * from "./generated/sf/substreams/v1/substreams_connect.js";
+
+// Export generated sink protobufs
+export { EntityChanges, EntityChange, EntityChange_Operation } from "./generated/sf/substreams/sink/entity/v1/entity_pb.js"
+export { DatabaseChanges, TableChange, TableChange_Operation } from "./generated/sf/substreams/sink/database/v1/database_pb.js"
+export { KVOperations, KVOperation, KVOperation_Type } from "./generated/sf/substreams/sink/kv/v1/kv_pb.js"
+export { PrometheusOperations, PrometheusOperation, GaugeOp, GaugeOp_Operation } from "./generated/pinax/substreams/sink/prometheus/v1/prometheus_pb.js"
+export { LoggerOperations, LoggerOperation, LoggingLevels } from "./generated/pinax/substreams/sink/winston/v1/winston_pb.js"
+
+// Export utils
 export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift } from './utils.js';
+import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 
 // types
@@ -46,12 +56,13 @@ export interface StoreDelta extends ModuleOutput {
 
 export const DEFAULT_HOST = "https://mainnet.eth.streamingfast.io:443";
 export const DEFAULT_AUTH = "https://auth.streamingfast.io/v1/auth/issue";
-export const DEFAULT_IPFS = "https://ipfs.io/ipfs/";
+export const DEFAULT_IPFS = "https://ipfs.pinax.network/ipfs/";
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
     clock: (clock: Clock) => void;
     mapOutput: (output: MapOutput, clock: Clock) => void;
+    anyMessage: (message: AnyMessage, clock: Clock) => void;
     debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
@@ -180,9 +191,16 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     
             for ( const output of block.outputs ) {
                 if ( output.data.case === "mapOutput" ) {
+                    // emit raw mapOutput
                     const { value } = output.data.value;
                     if ( !value.length ) continue;
                     this.emit("mapOutput", output as any, clock);
+
+                    // emit decoded mapOutput
+                    // BREAKING: could become the default emit for `mapOutput` if stable
+                    const decoded = decode(output, this.registry);
+                    if (!decoded) continue;
+                    this.emit("anyMessage", decoded, clock);
                 }
 
                 else if ( output.data.case === "debugStoreDeltas" ) {

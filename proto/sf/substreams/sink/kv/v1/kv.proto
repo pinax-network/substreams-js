@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sf.substreams.sink.kv.v1;
+
+option go_package = "github.com/streamingfast/substreams-sink-kv/pb;pbkv";
+
+message KVOperations {
+  repeated KVOperation operations = 1;
+}
+
+message KVOperation {
+  string key = 1;
+  bytes value = 2;
+  uint64 ordinal = 3;
+  enum Type {
+    UNSET = 0;    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    SET = 1;
+    DELETE = 2;
+  }
+  Type type = 4;
+}

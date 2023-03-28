@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package sf.substreams.sink.database.v1;
+
+option go_package = "github.com/streamingfast/substreams-database-change/pb;pbdatabase";
+
+message DatabaseChanges {
+  repeated TableChange table_changes = 1;
+}
+
+message TableChange {
+  string table = 1;
+  string pk = 2;
+  uint64 ordinal = 3;
+  enum Operation {
+    UNSET = 0;    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    CREATE = 1;
+    UPDATE = 2;
+    DELETE = 3;
+  }
+  Operation operation = 4;
+  repeated Field fields = 5;
+}
+
+message Field {
+  string name = 1;
+  string new_value = 2;
+  string old_value = 3;
+}
