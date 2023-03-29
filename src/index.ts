@@ -33,6 +33,8 @@ export * from "./authorization.js";
 // Utils
 import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
+import * as ipfs from "./ipfs";
+export { ipfs };
 
 // types
 import { IEnumTypeRegistry, IMessageTypeRegistry, IServiceTypeRegistry } from "@bufbuild/protobuf/dist/types/type-registry";
