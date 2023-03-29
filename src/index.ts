@@ -154,7 +154,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.stopped = true;
     }
 
-    public async start(delaySeconds?: number) {
+    public async start(delaySeconds?: number|string) {
         this.stopped = false;
         if ( delaySeconds ) await timeout(Number(delaySeconds) * 1000);
 
