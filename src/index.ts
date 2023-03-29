@@ -31,7 +31,7 @@ export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode } from './utils.js';
+import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode, timeout } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 import * as ipfs from "./ipfs";
 export { ipfs };
@@ -154,8 +154,9 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.stopped = true;
     }
 
-    public async start() {
+    public async start(delaySeconds?: number) {
         this.stopped = false;
+        if ( delaySeconds ) await timeout(Number(delaySeconds) * 1000);
 
         const client = createPromiseClient(Stream, this.transport);
 
