@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { createRegistryFromDescriptors } from "@bufbuild/protobuf";
 import * as ipfs from './ipfs.js';
 
@@ -73,4 +74,8 @@ export function decode(output: ModuleOutput, registry: Registry) {
         return message.fromBinary(value);
     }
     return null;
+}
+
+export function createHash(spkg: Uint8Array) {
+    return crypto.createHash("sha256").update(spkg).digest("hex");
 }
