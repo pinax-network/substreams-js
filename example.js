@@ -23,8 +23,8 @@ const stopBlockNum = "+10";
     });
 
     // stream of decoded MapOutputs
-    substreams.on("anyMessage", (message) => {
-        console.log({message});
+    substreams.on("anyMessage", (message, clock, typeName) => {
+        console.log({message, clock, typeName});
     });
 
     // end of stream

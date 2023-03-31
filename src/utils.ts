@@ -64,11 +64,18 @@ export function timeout(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export function decode(output: ModuleOutput, registry: Registry) {
+export function getTypeName( output: ModuleOutput ) {
+    if ( output.data.case === "mapOutput" ) {
+        const { typeUrl } = output.data.value;
+        return typeUrl.replace("type.googleapis.com/", "")
+    }
+    throw new Error("cannot get typeName");
+}
+
+export function decode(output: ModuleOutput, registry: Registry, typeName: string) {
     if ( !output.data.value ) return null;
     if ( output.data.case === "mapOutput" ) {
-        const { value, typeUrl } = output.data.value;
-        const typeName = typeUrl.replace("type.googleapis.com/", "")
+        const { value } = output.data.value;
         const message = registry.findMessage(typeName);
         if ( !message ) return null;
         return message.fromBinary(value);

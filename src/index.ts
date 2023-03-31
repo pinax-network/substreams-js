@@ -31,7 +31,7 @@ export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode, timeout } from './utils.js';
+import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode, timeout, getTypeName } from './utils.js';
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 import * as ipfs from "./ipfs";
 export { ipfs };
@@ -63,7 +63,7 @@ type MessageEvents = {
     block: (block: BlockScopedData) => void;
     clock: (clock: Clock) => void;
     mapOutput: (output: MapOutput, clock: Clock) => void;
-    anyMessage: (message: any, clock: Clock) => void;
+    anyMessage: (message: any, clock: Clock, typeName: string) => void;
     debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
@@ -199,10 +199,10 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                     this.emit("mapOutput", output as any, clock);
 
                     // emit decoded mapOutput
-                    // BREAKING: could become the default emit for `mapOutput` if stable
-                    const decoded = decode(output, this.registry);
+                    const typeName = getTypeName(output);
+                    const decoded = decode(output, this.registry, typeName);
                     if (!decoded) continue;
-                    this.emit("anyMessage", decoded, clock);
+                    this.emit("anyMessage", decoded, clock, typeName);
                 }
 
                 else if ( output.data.case === "debugStoreDeltas" ) {
