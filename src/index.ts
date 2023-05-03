@@ -9,7 +9,7 @@ import { Any } from "@bufbuild/protobuf"
 // Substream generated code
 // buf generate buf.build/streamingfast/substreams:develop
 import { Stream } from './generated/sf/substreams/v1/substreams_connect.js';
-import { Modules } from './generated/sf/substreams/v1/modules_pb.js';
+import { Modules, Module_Input_Params } from './generated/sf/substreams/v1/modules_pb.js';
 import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams_pb.js';
 
 // Export generated substreams protobufs
@@ -123,9 +123,13 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.callOptions = options.callOptions;
         
         // unpack spkg
-        const { modules, registry } = unpack(spkg);
-        this.modules = modules;
-        this.registry = registry;
+        try {
+            const { modules, registry } = unpack(spkg);
+            this.modules = modules;
+            this.registry = registry;
+        } catch (e) {
+            throw new Error("There seems to be a problem with the package file location. Check that the URL is still valid.", { cause: e })
+        }
 
         // create transport
         if ( isNode() ) {
@@ -154,11 +158,25 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.stopped = true;
     }
 
-    public async start(delaySeconds?: number|string) {
+    public async start(delaySeconds?: number|string, params?: {
+        moduleName: string,
+        value: string
+    }[]) {
         this.stopped = false;
         if ( delaySeconds ) await timeout(Number(delaySeconds) * 1000);
 
         const client = createPromiseClient(Stream, this.transport);
+
+        if ( params ) {
+            for ( const p of params ) {
+                const module_param = Object.values(this.modules.modules).find( m => m.name === p.moduleName );
+
+                if ( module_param ) {
+                    const input_param = ( module_param.inputs.find( i => i.input.case === 'params' ) )?.input.value as Module_Input_Params | undefined;
+                    if ( input_param ) input_param.value = p.value;
+                }
+            }
+        }
 
         const request = new Request({
             modules: this.modules,
