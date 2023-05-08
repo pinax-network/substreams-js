@@ -27,7 +27,7 @@
     "build": "tsup src/index.ts --dts",
     "test": "tsx --test **/*.spec.ts",
     "prepublishOnly": "npm run test && npm run build",
-    "codegen": "buf generate buf.build/streamingfast/substreams:develop && buf generate proto"
+    "codegen": "buf generate buf.build/streamingfast/substreams && buf generate proto"
   },
   "engines": {
     "node": ">=16"
