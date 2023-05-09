@@ -43,7 +43,7 @@ const stopBlockNum = "+10";
 (async () => {
     // download Substream from IPFS
     const spkg = await download(url);
-    
+
     // Initialize Substreams
     const substreams = new Substreams(spkg, outputModule, {
         startBlockNum,

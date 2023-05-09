@@ -35,10 +35,14 @@ export function parseStopBlock( startBlock: string, stopBlock?: string ) {
 }
 
 export function unpack( binary: Uint8Array ) {
-    const { modules } = Package.fromBinary(binary);
-    const registry = createRegistryFromDescriptors(binary);
-    if ( !modules ) throw new Error(`no modules found in binary`);
-    return { modules, registry };
+    try {
+        const { modules } = Package.fromBinary(binary);
+        const registry = createRegistryFromDescriptors(binary);
+        if ( !modules ) throw new Error(`no modules found in binary`);
+        return { modules, registry };
+    } catch (e: any) {
+        throw new Error(`invalid package binary [${e}]`);
+    }
 }
 
 export async function download(url: string) {

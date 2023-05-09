@@ -1,7 +1,7 @@
 {
   "name": "substreams",
   "description": "Substreams Javascript consumer",
-  "version": "0.5.6",
+  "version": "0.6.0",
   "homepage": "https://github.com/pinax-network/substreams-js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,15 +37,16 @@
     "@bufbuild/connect-node": "0.8.x",
     "@bufbuild/connect-web": "0.8.x",
     "@bufbuild/protobuf": "1.x",
-    "typed-emitter": "2.x"
+    "typed-emitter": "latest"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.x",
     "@bufbuild/protoc-gen-connect-es": "0.8.x",
     "@bufbuild/protoc-gen-es": "1.x",
-    "@types/node": "18.x",
-    "tsup": "6.x",
-    "tsx": "3.x",
-    "typescript": "4.x"
+    "@tsconfig/recommended": "latest",
+    "@types/node": "latest",
+    "tsup": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
   }
 }

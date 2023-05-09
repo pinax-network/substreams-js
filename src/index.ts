@@ -84,7 +84,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     public forkSteps?: ForkStep[];
     public initialStoreSnapshotForModules?: string[];
     public debugInitialStoreSnapshotForModules?: string[];
-    public productionMode = false;
+    public productionMode = true;
     public modules: Modules;
     public registry: Registry;
     public transport: Transport;
@@ -121,15 +121,11 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.auth = options.auth ?? DEFAULT_AUTH;
         this.authorization = options.authorization ?? "";
         this.callOptions = options.callOptions;
-        
+
         // unpack spkg
-        try {
-            const { modules, registry } = unpack(spkg);
-            this.modules = modules;
-            this.registry = registry;
-        } catch (e) {
-            throw new Error("There seems to be a problem with the package file location. Check that the URL is still valid.", { cause: e })
-        }
+        const { modules, registry } = unpack(spkg);
+        this.modules = modules;
+        this.registry = registry;
 
         // create transport
         if ( isNode() ) {
@@ -158,25 +154,26 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.stopped = true;
     }
 
-    public async start(delaySeconds?: number|string, params?: {
-        moduleName: string,
-        value: string
-    }[]) {
+    public param(value: string, moduleName?: string) {
+        if ( !moduleName ) moduleName = this.outputModule;
+        const module = this.modules.modules.find(m => m.name === moduleName);
+        if ( !module ) throw new Error(`Module ${moduleName} not found`);
+        const module_input = module.inputs.find(i => i.input.case === 'params');
+        if ( !module_input ) throw new Error(`Module ${moduleName} does not have a params input`);
+        module_input.input.value = new Module_Input_Params({value});
+    }
+
+    public params(params: {[moduleName: string]: string}) {
+        for ( const [moduleName, value] of Object.entries(params) ) {
+            this.param(value, moduleName);
+        }
+    }
+
+    public async start(delaySeconds?: number|string) {
         this.stopped = false;
         if ( delaySeconds ) await timeout(Number(delaySeconds) * 1000);
 
         const client = createPromiseClient(Stream, this.transport);
-
-        if ( params ) {
-            for ( const p of params ) {
-                const module_param = Object.values(this.modules.modules).find( m => m.name === p.moduleName );
-
-                if ( module_param ) {
-                    const input_param = ( module_param.inputs.find( i => i.input.case === 'params' ) )?.input.value as Module_Input_Params | undefined;
-                    if ( input_param ) input_param.value = p.value;
-                }
-            }
-        }
 
         const request = new Request({
             modules: this.modules,
@@ -188,7 +185,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         if ( this.authorization ) {
             this.authorization = await parseAuthorization(this.authorization, this.auth);
         }
-        
+
         // Setup Substream
         const responses = await client.blocks(request, {
             headers: { Authorization: this.authorization },
@@ -208,7 +205,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
             this.emit("block", block);
             this.emit("clock", clock);
             this.emit("head_block_time_drift", calculateHeadBlockTimeDrift(clock), clock);
-    
+
             for ( const output of block.outputs ) {
                 if ( output.data.case === "mapOutput" ) {
                     // emit raw mapOutput
