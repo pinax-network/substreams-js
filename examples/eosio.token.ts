@@ -28,7 +28,10 @@ const authorization = process.env.SUBSTREAMS_API_TOKEN;
             console.log(message);
         }
     });
+    // add single param (defaults to current `outputModule`)
     substreams.param(param);
+
+    // add params to various map modules
     substreams.params(params);
     substreams.start();
 })();
