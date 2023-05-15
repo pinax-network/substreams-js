@@ -5,7 +5,7 @@ import * as ipfs from './ipfs.js';
 // Substream auto-generated
 import { Package } from './generated/sf/substreams/v1/package_pb.js';
 import { Clock } from "./generated/sf/substreams/v1/clock_pb.js";
-import { BlockScopedData, ModuleOutput, Response } from "./generated/sf/substreams/v1/substreams_pb.js";
+import { BlockScopedData, MapModuleOutput, Response } from "./generated/sf/substreams/rpc/v2/service_pb.js";
 import { Registry } from "./index.js";
 
 export function formatDate( seconds: number ) {
@@ -13,7 +13,7 @@ export function formatDate( seconds: number ) {
 }
 
 export function parseBlockData( response: Response ) {
-    if (response.message.case !== 'data') return;
+    if (response.message.case !== 'blockScopedData') return;
     return response.message.value as BlockScopedData;
 }
 
@@ -68,23 +68,19 @@ export function timeout(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export function getTypeName( output: ModuleOutput ) {
-    if ( output.data.case === "mapOutput" ) {
-        const { typeUrl } = output.data.value;
-        return typeUrl.replace("type.googleapis.com/", "")
-    }
-    throw new Error("cannot get typeName");
+export function getTypeName( output: MapModuleOutput ) {
+    if ( !output.mapOutput?.typeUrl ) throw new Error("cannot get typeName");
+    const { typeUrl } = output.mapOutput;
+    return typeUrl.replace("type.googleapis.com/", "")
 }
 
-export function decode(output: ModuleOutput, registry: Registry, typeName: string) {
-    if ( !output.data.value ) return null;
-    if ( output.data.case === "mapOutput" ) {
-        const { value } = output.data.value;
-        const message = registry.findMessage(typeName);
-        if ( !message ) return null;
-        return message.fromBinary(value);
-    }
-    return null;
+export function decode(output: MapModuleOutput, registry: Registry, typeName: string) {
+    if ( !output?.mapOutput ) return null;
+    const value = output.mapOutput?.value
+    if ( !value?.length ) return null;
+    const message = registry.findMessage(typeName);
+    if ( !message ) return null;
+    return message.fromBinary(value);
 }
 
 export function createHash(spkg: Uint8Array) {

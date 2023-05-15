@@ -4,20 +4,20 @@ import { CallOptions, createPromiseClient, Transport } from "@bufbuild/connect";
 import { createGrpcTransport } from "@bufbuild/connect-node";
 import { createConnectTransport } from "@bufbuild/connect-web";
 
-import { Any } from "@bufbuild/protobuf"
+// import { Any } from "@bufbuild/protobuf"
 
 // Substream generated code
 // buf generate buf.build/streamingfast/substreams:develop
-import { Stream } from './generated/sf/substreams/v1/substreams_connect.js';
+import { Stream } from './generated/sf/substreams/rpc/v2/service_connect.js';
 import { Modules, Module_Input_Params } from './generated/sf/substreams/v1/modules_pb.js';
-import { BlockScopedData, ForkStep, Request, ModuleOutput, StoreDeltas } from './generated/sf/substreams/v1/substreams_pb.js';
+import { BlockScopedData, Request, MapModuleOutput, StoreModuleOutput } from './generated/sf/substreams/rpc/v2/service_pb.js';
 
 // Export generated substreams protobufs
 export * from "./generated/sf/substreams/v1/clock_pb.js";
 export * from "./generated/sf/substreams/v1/modules_pb.js";
 export * from "./generated/sf/substreams/v1/package_pb.js";
-export * from "./generated/sf/substreams/v1/substreams_pb.js";
-export * from "./generated/sf/substreams/v1/substreams_connect.js";
+export * from "./generated/sf/substreams/rpc/v2/service_pb.js";
+export * from "./generated/sf/substreams/rpc/v2/service_connect.js";
 
 // Export generated sink protobufs
 export { EntityChanges, EntityChange, EntityChange_Operation } from "./generated/sf/substreams/sink/entity/v1/entity_pb.js"
@@ -31,7 +31,10 @@ export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, decode, timeout, getTypeName } from './utils.js';
+import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, timeout} from './utils.js';
+// V2 changes
+import { decode, getTypeName } from './utils.js';
+
 import { Clock } from './generated/sf/substreams/v1/clock_pb.js';
 import * as ipfs from "./ipfs";
 export { ipfs };
@@ -41,19 +44,26 @@ import { IEnumTypeRegistry, IMessageTypeRegistry, IServiceTypeRegistry } from "@
 import { parseAuthorization } from './authorization';
 export type Registry = IMessageTypeRegistry & IEnumTypeRegistry & IServiceTypeRegistry;
 
-export interface MapOutput extends ModuleOutput {
-    data: {
-        case: "mapOutput"
-        value: Any;
-    }
-}
+// export interface MapOutput extends MapModuleOutput {
+//     data: {
+//         case: "output"
+//         value: Any;
+//     }
+// }
 
-export interface StoreDelta extends ModuleOutput {
-    data: {
-        case: "debugStoreDeltas"
-        value: StoreDeltas;
-    }
-}
+// export interface StoreDelta extends StoreModuleOutput {
+//     data: {
+//         case: "debug_store_outputs"
+//         value: StoreModuleOutput;
+//     }
+// }
+
+// { no: 1, name: "output", kind: "message", T: MapModuleOutput },
+// { no: 2, name: "clock", kind: "message", T: Clock },
+// { no: 3, name: "cursor", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+// { no: 4, name: "final_block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+// { no: 10, name: "debug_map_outputs", kind: "message", T: MapModuleOutput, repeated: true },
+// { no: 11, name: "debug_store_outputs", kind: "message", T: StoreModuleOutput, repeated: true },
 
 export const DEFAULT_HOST = "https://mainnet.eth.streamingfast.io:443";
 export const DEFAULT_AUTH = "https://auth.streamingfast.io/v1/auth/issue";
@@ -62,13 +72,21 @@ export const DEFAULT_IPFS = "https://ipfs.pinax.network/ipfs/";
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
     clock: (clock: Clock) => void;
-    mapOutput: (output: MapOutput, clock: Clock) => void;
-    anyMessage: (message: any, clock: Clock, typeName: string) => void;
-    debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
+    anyMessage: <T>(message: T, clock: Clock, typeName: string) => void;
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
     end: (cursor: string, clock: Clock) => void;
     head_block_time_drift: (seconds: number, clock: Clock) => void;
+
+    // V2 updates
+    // new
+    output: (output: MapModuleOutput, clock: Clock) => void;
+    debugStoreOutputs: (output: StoreModuleOutput, clock: Clock) => void;
+    debugMapOutputs: (output: MapModuleOutput, clock: Clock) => void;
+    finalBlockHeight: (block_height: bigint, clock: Clock) => void;
+    // deprecated
+    // mapOutput: (output: MapModuleOutput, clock: Clock) => void;
+    // debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
 }
 
 export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
@@ -81,7 +99,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     public cursor?: string;
     public startCursor?: string;
     public irreversibilityCondition?: string;
-    public forkSteps?: ForkStep[];
+    public finalBlocksOnly?: boolean;
     public initialStoreSnapshotForModules?: string[];
     public debugInitialStoreSnapshotForModules?: string[];
     public productionMode = true;
@@ -100,7 +118,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         stopBlockNum?: string,
         authorization?: string,
         startCursor?: string,
-        forkSteps?: ForkStep[],
+        finalBlocksOnly?: boolean,
         irreversibilityCondition?: string;
         productionMode?: boolean;
         initialStoreSnapshotForModules?: string[],
@@ -113,7 +131,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.stopBlockNum = parseStopBlock(this.startBlockNum, options.stopBlockNum);
         this.startCursor = options.startCursor;
         this.irreversibilityCondition = options.irreversibilityCondition;
-        this.forkSteps = options.forkSteps;
+        this.finalBlocksOnly = options.finalBlocksOnly;
         this.initialStoreSnapshotForModules = options.initialStoreSnapshotForModules;
         this.debugInitialStoreSnapshotForModules = options.debugInitialStoreSnapshotForModules;
         this.productionMode = options.productionMode ?? false;
@@ -198,35 +216,27 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         for await ( const response of responses ) {
             if ( this.stopped ) break;
             const block = parseBlockData(response);
+
+            // skip if block data if not present
             if ( !block ) continue;
             if ( !block.clock ) continue;
-            const clock: Clock = block.clock;
+            const { output, clock, finalBlockHeight } = block;
+
             if ( !last_cursor ) this.emit("start", block.cursor, clock);
             this.emit("block", block);
             this.emit("clock", clock);
             this.emit("head_block_time_drift", calculateHeadBlockTimeDrift(clock), clock);
 
-            for ( const output of block.outputs ) {
-                if ( output.data.case === "mapOutput" ) {
-                    // emit raw mapOutput
-                    const { value } = output.data.value;
-                    if ( !value.length ) continue;
-                    this.emit("mapOutput", output as any, clock);
-
-                    // emit decoded mapOutput
-                    const typeName = getTypeName(output);
-                    const decoded = decode(output, this.registry, typeName);
-                    if (!decoded) continue;
-                    this.emit("anyMessage", decoded, clock, typeName);
-                }
-
-                else if ( output.data.case === "debugStoreDeltas" ) {
-                    const { deltas } = output.data.value;
-                    if ( !deltas.length ) continue;
-                    this.emit("debugStoreDeltas", output as any, clock);
-                }
+            // Map Output
+            if ( output ) {
+                this.emit("output", output, clock);
+                const typeName = getTypeName(output);
+                const decoded = decode(output, this.registry, typeName);
+                if (!decoded) continue;
+                this.emit("anyMessage", decoded, clock, typeName);
             }
             this.emit("cursor", block.cursor, clock);
+            this.emit("finalBlockHeight", finalBlockHeight, clock);
             last_cursor = block.cursor;
             last_clock = clock;
         }

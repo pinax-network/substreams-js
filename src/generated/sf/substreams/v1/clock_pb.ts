@@ -7,6 +7,8 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
 
 /**
+ * Clock is a pointer to a block with added timestamp
+ *
  * @generated from message sf.substreams.v1.Clock
  */
 export class Clock extends Message<Clock> {
@@ -52,6 +54,51 @@ export class Clock extends Message<Clock> {
 
   static equals(a: Clock | PlainMessage<Clock> | undefined, b: Clock | PlainMessage<Clock> | undefined): boolean {
     return proto3.util.equals(Clock, a, b);
+  }
+}
+
+/**
+ * BlockRef is a pointer to a block to which we don't know the timestamp
+ *
+ * @generated from message sf.substreams.v1.BlockRef
+ */
+export class BlockRef extends Message<BlockRef> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: uint64 number = 2;
+   */
+  number = protoInt64.zero;
+
+  constructor(data?: PartialMessage<BlockRef>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "sf.substreams.v1.BlockRef";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "number", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BlockRef {
+    return new BlockRef().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BlockRef {
+    return new BlockRef().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BlockRef {
+    return new BlockRef().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BlockRef | PlainMessage<BlockRef> | undefined, b: BlockRef | PlainMessage<BlockRef> | undefined): boolean {
+    return proto3.util.equals(BlockRef, a, b);
   }
 }
 
