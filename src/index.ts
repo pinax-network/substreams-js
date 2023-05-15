@@ -51,19 +51,19 @@ export const DEFAULT_IPFS = "https://ipfs.pinax.network/ipfs/";
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
     clock: (clock: Clock) => void;
-    anyMessage: <T>(message: T, clock: Clock, typeName: string) => void;
+    anyMessage: (message: any, clock: Clock, typeName: string) => void;
     cursor: (cursor: string, clock: Clock) => void;
     start: (cursor: string, clock: Clock) => void;
     end: (cursor: string, clock: Clock) => void;
     head_block_time_drift: (seconds: number, clock: Clock) => void;
 
-    // V2 updates
-    // new
+    // V2 new emitters
     output: (output: MapModuleOutput, clock: Clock) => void;
     debugStoreOutputs: (output: StoreModuleOutput[], clock: Clock) => void;
     debugMapOutputs: (output: MapModuleOutput[], clock: Clock) => void;
     finalBlockHeight: (block_height: bigint, clock: Clock) => void;
-    // deprecated
+
+    // V2 deprecated
     // mapOutput: (output: MapModuleOutput, clock: Clock) => void;
     // debugStoreDeltas: (output: StoreDelta, clock: Clock) => void;
 }
