@@ -44,27 +44,6 @@ import { IEnumTypeRegistry, IMessageTypeRegistry, IServiceTypeRegistry } from "@
 import { parseAuthorization } from './authorization';
 export type Registry = IMessageTypeRegistry & IEnumTypeRegistry & IServiceTypeRegistry;
 
-// export interface MapOutput extends MapModuleOutput {
-//     data: {
-//         case: "output"
-//         value: Any;
-//     }
-// }
-
-// export interface StoreDelta extends StoreModuleOutput {
-//     data: {
-//         case: "debug_store_outputs"
-//         value: StoreModuleOutput;
-//     }
-// }
-
-// { no: 1, name: "output", kind: "message", T: MapModuleOutput },
-// { no: 2, name: "clock", kind: "message", T: Clock },
-// { no: 3, name: "cursor", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-// { no: 4, name: "final_block_height", kind: "scalar", T: 4 /* ScalarType.UINT64 */ },
-// { no: 10, name: "debug_map_outputs", kind: "message", T: MapModuleOutput, repeated: true },
-// { no: 11, name: "debug_store_outputs", kind: "message", T: StoreModuleOutput, repeated: true },
-
 export const DEFAULT_HOST = "https://mainnet.eth.streamingfast.io:443";
 export const DEFAULT_AUTH = "https://auth.streamingfast.io/v1/auth/issue";
 export const DEFAULT_IPFS = "https://ipfs.pinax.network/ipfs/";
@@ -81,8 +60,8 @@ type MessageEvents = {
     // V2 updates
     // new
     output: (output: MapModuleOutput, clock: Clock) => void;
-    debugStoreOutputs: (output: StoreModuleOutput, clock: Clock) => void;
-    debugMapOutputs: (output: MapModuleOutput, clock: Clock) => void;
+    debugStoreOutputs: (output: StoreModuleOutput[], clock: Clock) => void;
+    debugMapOutputs: (output: MapModuleOutput[], clock: Clock) => void;
     finalBlockHeight: (block_height: bigint, clock: Clock) => void;
     // deprecated
     // mapOutput: (output: MapModuleOutput, clock: Clock) => void;
@@ -235,6 +214,11 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                 if (!decoded) continue;
                 this.emit("anyMessage", decoded, clock, typeName);
             }
+            // Debug
+            this.emit("debugStoreOutputs", block.debugStoreOutputs, clock);
+            this.emit("debugMapOutputs", block.debugMapOutputs, clock);
+
+            // Final
             this.emit("cursor", block.cursor, clock);
             this.emit("finalBlockHeight", finalBlockHeight, clock);
             last_cursor = block.cursor;
