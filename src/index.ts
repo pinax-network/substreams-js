@@ -24,7 +24,6 @@ export { EntityChanges, EntityChange, EntityChange_Operation } from "./generated
 export { DatabaseChanges, TableChange, TableChange_Operation } from "./generated/sf/substreams/sink/database/v1/database_pb.js"
 export { KVOperations, KVOperation, KVOperation_Type } from "./generated/sf/substreams/sink/kv/v1/kv_pb.js"
 export { PrometheusOperations, PrometheusOperation, GaugeOp, GaugeOp_Operation } from "./generated/pinax/substreams/sink/prometheus/v1/prometheus_pb.js"
-export { LoggerOperations, LoggerOperation, LoggingLevels } from "./generated/pinax/substreams/sink/winston/v1/winston_pb.js"
 
 // Export utils
 export * from "./utils.js";
