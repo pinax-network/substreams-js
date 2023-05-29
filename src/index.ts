@@ -10,7 +10,7 @@ import { createConnectTransport } from "@bufbuild/connect-web";
 // buf generate buf.build/streamingfast/substreams:develop
 import { Stream } from './generated/sf/substreams/rpc/v2/service_connect.js';
 import { Modules, Module_Input_Params } from './generated/sf/substreams/v1/modules_pb.js';
-import { BlockScopedData, Request, MapModuleOutput, StoreModuleOutput } from './generated/sf/substreams/rpc/v2/service_pb.js';
+import { BlockScopedData, Request, MapModuleOutput, StoreModuleOutput, ModulesProgress, BlockUndoSignal } from './generated/sf/substreams/rpc/v2/service_pb.js';
 
 // Export generated substreams protobufs
 export * from "./generated/sf/substreams/v1/clock_pb.js";
@@ -30,7 +30,7 @@ export * from "./utils.js";
 export * from "./authorization.js";
 
 // Utils
-import { parseBlockData, parseStopBlock, unpack, isNode, calculateHeadBlockTimeDrift, timeout} from './utils.js';
+import { parseBlockData, parseStopBlock, parseModulesProgress, parseBlockUndoSignal, unpack, isNode, calculateHeadBlockTimeDrift, timeout } from './utils.js';
 // V2 changes
 import { decode, getTypeName } from './utils.js';
 
@@ -49,6 +49,8 @@ export const DEFAULT_IPFS = "https://ipfs.pinax.network/ipfs/";
 
 type MessageEvents = {
     block: (block: BlockScopedData) => void;
+    progress: (progress: ModulesProgress) => void;
+    undo: (undo: BlockUndoSignal) => void;
     clock: (clock: Clock) => void;
     anyMessage: (message: any, clock: Clock, typeName: string) => void;
     cursor: (cursor: string, clock: Clock) => void;
@@ -124,7 +126,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         this.registry = registry;
 
         // create transport
-        if ( isNode() ) {
+        if (isNode()) {
             this.transport = createGrpcTransport({
                 baseUrl: this.host,
                 httpVersion: "2",
@@ -134,15 +136,15 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
                 baseUrl: this.host,
                 useBinaryFormat: true,
                 jsonOptions: {
-                  typeRegistry: this.registry,
+                    typeRegistry: this.registry,
                 },
             })
         }
 
         // Validate input
-        if ( this.startBlockNum ) {
+        if (this.startBlockNum) {
             const startBlockNum = Number(this.startBlockNum);
-            if ( !Number.isInteger(startBlockNum)) throw new Error("startBlockNum must be an integer");
+            if (!Number.isInteger(startBlockNum)) throw new Error("startBlockNum must be an integer");
         }
     }
 
@@ -151,23 +153,23 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
     }
 
     public param(value: string, moduleName?: string) {
-        if ( !moduleName ) moduleName = this.outputModule;
+        if (!moduleName) moduleName = this.outputModule;
         const module = this.modules.modules.find(m => m.name === moduleName);
-        if ( !module ) throw new Error(`Module ${moduleName} not found`);
+        if (!module) throw new Error(`Module ${moduleName} not found`);
         const module_input = module.inputs.find(i => i.input.case === 'params');
-        if ( !module_input ) throw new Error(`Module ${moduleName} does not have a params input`);
-        module_input.input.value = new Module_Input_Params({value});
+        if (!module_input) throw new Error(`Module ${moduleName} does not have a params input`);
+        module_input.input.value = new Module_Input_Params({ value });
     }
 
-    public params(params: {[moduleName: string]: string}) {
-        for ( const [moduleName, value] of Object.entries(params) ) {
+    public params(params: { [moduleName: string]: string }) {
+        for (const [moduleName, value] of Object.entries(params)) {
             this.param(value, moduleName);
         }
     }
 
-    public async start(delaySeconds?: number|string) {
+    public async start(delaySeconds?: number | string) {
         this.stopped = false;
-        if ( delaySeconds ) await timeout(Number(delaySeconds) * 1000);
+        if (delaySeconds) await timeout(Number(delaySeconds) * 1000);
 
         const client = createPromiseClient(Stream, this.transport);
 
@@ -178,7 +180,7 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
 
         // Authenticate API server key
         // no action if Substreams API token is provided
-        if ( this.authorization ) {
+        if (this.authorization) {
             this.authorization = await parseAuthorization(this.authorization, this.auth);
         }
 
@@ -191,37 +193,43 @@ export class Substreams extends (EventEmitter as new () => TypedEmitter<MessageE
         // Send Substream Data to Adapter
         let last_cursor: string = '';
         let last_clock = {} as Clock;
-        for await ( const response of responses ) {
-            if ( this.stopped ) break;
+        for await (const response of responses) {
+            if (this.stopped) break;
             const block = parseBlockData(response);
+            const progress = parseModulesProgress(response);
+            const undo = parseBlockUndoSignal(response);
 
             // skip if block data if not present
-            if ( !block ) continue;
-            if ( !block.clock ) continue;
-            const { output, clock, finalBlockHeight } = block;
+            if (block && block.clock) {
+                const { output, clock, finalBlockHeight } = block;
 
-            if ( !last_cursor ) this.emit("start", block.cursor, clock);
-            this.emit("block", block);
-            this.emit("clock", clock);
-            this.emit("head_block_time_drift", calculateHeadBlockTimeDrift(clock), clock);
+                if (!last_cursor) this.emit("start", block.cursor, clock);
+                this.emit("block", block);
+                this.emit("clock", clock);
+                this.emit("head_block_time_drift", calculateHeadBlockTimeDrift(clock), clock);
 
-            // Map Output
-            if ( output ) {
-                this.emit("output", output, clock);
-                const typeName = getTypeName(output);
-                const decoded = decode(output, this.registry, typeName);
-                if (!decoded) continue;
-                this.emit("anyMessage", decoded, clock, typeName);
+                // Map Output
+                if (output) {
+                    this.emit("output", output, clock);
+                    const typeName = getTypeName(output);
+                    const decoded = decode(output, this.registry, typeName);
+                    if (!decoded) continue;
+                    this.emit("anyMessage", decoded, clock, typeName);
+                }
+                // Debug
+                this.emit("debugStoreOutputs", block.debugStoreOutputs, clock);
+                this.emit("debugMapOutputs", block.debugMapOutputs, clock);
+
+                // Final
+                this.emit("cursor", block.cursor, clock);
+                this.emit("finalBlockHeight", finalBlockHeight, clock);
+                last_cursor = block.cursor;
+                last_clock = clock;
+            } else if (progress) {
+                this.emit("progress", progress);
+            } else if (undo) {
+                this.emit("undo", undo);
             }
-            // Debug
-            this.emit("debugStoreOutputs", block.debugStoreOutputs, clock);
-            this.emit("debugMapOutputs", block.debugMapOutputs, clock);
-
-            // Final
-            this.emit("cursor", block.cursor, clock);
-            this.emit("finalBlockHeight", finalBlockHeight, clock);
-            last_cursor = block.cursor;
-            last_clock = clock;
         }
         this.emit("end", last_cursor, last_clock);
     }
