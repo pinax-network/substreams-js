@@ -26,27 +26,35 @@
   "scripts": {
     "build": "tsup src/index.ts --dts",
     "test": "tsx --test **/*.spec.ts",
-    "prepublishOnly": "npm run test && npm run build",
+    "prepublishOnly": "bun run test && bun run build",
     "codegen": "buf generate buf.build/streamingfast/substreams && buf generate proto"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=16",
+    "bun": ">=1.4.3"
   },
   "dependencies": {
     "@bufbuild/connect": "0.8.x",
     "@bufbuild/connect-node": "0.8.x",
     "@bufbuild/connect-web": "0.8.x",
     "@bufbuild/protobuf": "1.x",
-    "typed-emitter": "latest"
+    "typed-emitter": "2.1.0"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.x",
     "@bufbuild/protoc-gen-connect-es": "0.8.x",
     "@bufbuild/protoc-gen-es": "1.x",
-    "@tsconfig/recommended": "latest",
-    "@types/node": "latest",
-    "tsup": "latest",
-    "tsx": "latest",
-    "typescript": "latest"
+    "@tsconfig/recommended": "1.0.2",
+    "@types/node": "20.2.5",
+    "tsup": "6.7.0",
+    "tsx": "3.12.7",
+    "typescript": "5.0.4"
+  },
+  "packageManager": "bun@1.4.3",
+  "devEngines": {
+    "packageManager": {
+      "name": "bun",
+      "onFail": "error"
+    }
   }
 }
